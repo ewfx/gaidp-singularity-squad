@@ -6,47 +6,54 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     
-    # Initialize Flask-RestX with enhanced configuration
+    # Create API with custom configuration
     api = Api(
-        app,
+        title='Regulatory Compliance API',
         version='1.0',
-        title='Regulatory Rulebook API',
-        description='''
-        Enterprise-grade API for managing regulatory rulebooks and documents.
-        
-        This API provides endpoints for:
-        * Uploading regulatory PDF documents
-        * Managing rulebook metadata
-        * Retrieving rulebook information
-        
-        ## Features
-        * PDF file validation
-        * Automatic UUID generation
-        * Metadata management
-        * File size limits
-        * Secure file storage
-        
-        ## Security
-        * File type validation
-        * Size restrictions
-        * Secure filename handling
-        ''',
-        doc='/docs',
+        description='API for regulatory compliance and rulebook management',
+        doc='/docs',  # Swagger UI endpoint
+        default='rulebooks',  # Default namespace
+        default_label='Rulebook Operations',
+        # Swagger UI configuration
         authorizations={
             'apikey': {
                 'type': 'apiKey',
                 'in': 'header',
-                'name': 'X-API-Key'
+                'name': 'Authorization'
             }
         },
-        contact='API Support',
-        license='Proprietary',
-        license_url='https://example.com/license'
+        # Make UI look better
+        ui=True,
+        validate=True,
+        # Keep endpoints expanded
+        ordered=True,
+        # Custom UI configuration
+        swagger_ui_config={
+            'docExpansion': 'list',  # Keep endpoints expanded
+            'defaultModelsExpandDepth': -1,  # Expand all models
+            'defaultModelExpandDepth': -1,  # Expand all model properties
+            'deepLinking': True,  # Enable deep linking
+            'displayOperationId': True,  # Show operation IDs
+            'displayRequestDuration': True,  # Show request duration
+            'filter': True,  # Enable filtering
+            'operationsSorter': 'alpha',  # Sort operations alphabetically
+            'showExtensions': True,  # Show extensions
+            'showCommonExtensions': True,  # Show common extensions
+            'supportedSubmitMethods': ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'],  # Show all HTTP methods
+            'tryItOutEnabled': True,  # Enable try it out by default
+            'persistAuthorization': True,  # Persist authorization
+            'syntaxHighlight': True,  # Enable syntax highlighting
+            'jsonEditor': True,  # Enable JSON editor
+            'defaultModelRendering': 'model',  # Show models by default
+        }
     )
     
     # Register namespaces
     from .controllers.rulebook_controller import api as rulebook_ns
     from .controllers.anomaly_controller import api as anomaly
     api.add_namespace(rulebook_ns)
-    api.add_namespace(anomaly)   
+    
+    api.add_namespace(anomaly) 
+    # Initialize API with app
+    api.init_app(app)  
     return app 

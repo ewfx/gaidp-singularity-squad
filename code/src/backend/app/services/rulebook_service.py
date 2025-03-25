@@ -185,31 +185,51 @@ class RulebookService:
             raise Exception(f"Error retrieving rulebooks: {str(e)}")
 
     def validate_transactions(self, csv_file, rulebook_uuid: str) -> List[dict]:
-        """Validate transactions from CSV against a rulebook"""
+        """Validate transactions from CSV against rulebook rules"""
         try:
-            # Get rulebook
+            # Get rulebook metadata
             rulebook = self.get_rulebook(rulebook_uuid)
             if not rulebook:
-                raise ValueError(f"Rulebook with UUID {rulebook_uuid} not found")
+                raise ValueError(f"Rulebook {rulebook_uuid} not found")
             
             if rulebook['status'] != 'COMPLETED':
-                raise ValueError(f"Rulebook {rulebook_uuid} is not ready for validation (status: {rulebook['status']})")
+                raise ValueError(f"Rulebook {rulebook_uuid} is not ready for validation")
             
             # Read CSV file
             df = pd.read_csv(csv_file)
             
-            # Validate each transaction
             violations = []
-            for _, transaction in df.iterrows():
-                transaction_violations = self.rule_generator.validate_transaction(
-                    transaction.to_dict(),
-                    [Rule(**rule) for rule in rulebook['rules']]
-                )
-                if transaction_violations:
-                    violations.append({
-                        'transaction': transaction.to_dict(),
-                        'violations': [rule.dict() for rule in transaction_violations]
-                    })
+            for rule in rulebook['rules']:
+                # Create a safe execution environment for the validation code
+                local_vars = {'row': None, 'pd': pd}
+                
+                # Execute the validation code for each row
+                for index, row in df.iterrows():
+                    local_vars['row'] = row
+                    try:
+                        # Execute the validation code
+                        exec(rule['validation_code'], {'__builtins__': {}}, local_vars)
+                        is_valid = local_vars.get('validate_rule', lambda x: False)(row)
+                        
+                        if not is_valid:
+                            violations.append({
+                                'rule_id': rule['rule_id'],
+                                'description': rule['description'],
+                                'severity': rule['severity'],
+                                'category': rule['category'],
+                                'row_index': index,
+                                'row_data': row.to_dict()
+                            })
+                    except Exception as e:
+                        violations.append({
+                            'rule_id': rule['rule_id'],
+                            'description': rule['description'],
+                            'severity': rule['severity'],
+                            'category': rule['category'],
+                            'row_index': index,
+                            'row_data': row.to_dict(),
+                            'validation_error': str(e)
+                        })
             
             return violations
             
