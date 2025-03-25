@@ -15,10 +15,82 @@
       body {
         font-family: "Inter", sans-serif;
         background-color: #f8fafc;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .main-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        position: relative;
       }
 
       .sidebar {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        width: 16rem;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .user-profile {
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .content-wrapper {
+        position: relative;
+        margin-left: 16rem;
+        width: calc(100% - 16rem);
+        min-height: 100vh;
+        background-color: #f8fafc;
+      }
+
+      .content-area {
+        height: 100vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+      }
+
+      .page-header {
+        position: sticky;
+        top: 0;
+        background-color: #f8fafc;
+        padding: 1rem 0;
+        z-index: 30;
+      }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 50;
+        display: none;
+      }
+
+      .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        width: 90%;
+        max-width: 600px;
       }
 
       .nav-link {
@@ -117,55 +189,67 @@
           opacity: 1;
         }
       }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 4rem;
+        }
+
+        .content-wrapper {
+          margin-left: 4rem;
+          width: calc(100% - 4rem);
+        }
+
+        .modal-content {
+          margin: 10% auto;
+          width: 95%;
+          padding: 1.5rem;
+        }
+      }
     </style>
   </head>
   <body class="bg-gray-50">
-    <div class="min-h-screen flex">
+    <div class="main-container">
       <!-- Sidebar -->
-      <div class="sidebar w-64 min-h-screen flex flex-col">
-        <div class="p-6">
-          <div class="flex items-center space-x-3">
-            <div
-              class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"
-            >
-              <i class="fas fa-shield-alt text-white text-xl"></i>
+      <div class="sidebar">
+        <div class="sidebar-content">
+          <div class="p-6">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-shield-alt text-white text-xl"></i>
+              </div>
+              <span class="text-white text-xl font-semibold"
+                >Compliance Portal</span
+              >
             </div>
-            <span class="text-white text-xl font-semibold"
-              >Compliance Portal</span
-            >
           </div>
+          <nav class="flex-1 px-4 py-6 space-y-1">
+            <a
+              href="/dashboard"
+              class="nav-link active flex items-center px-4 py-3 text-gray-300 rounded-lg"
+            >
+              <i class="fas fa-home w-6"></i>
+              <span>Rulebook Management</span>
+            </a>
+            <a
+              href="/data-validation"
+              class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+            >
+              <i class="fas fa-check-circle w-6"></i>
+              <span>Data Validation</span>
+            </a>
+            <a
+              href="/anomaly-detection"
+              class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+            >
+              <i class="fas fa-exclamation-triangle w-6"></i>
+              <span>Anomaly Detection</span>
+            </a>
+          </nav>
         </div>
-        <nav class="flex-1 px-4 py-6 space-y-1">
-          <a
-            href="#"
-            class="nav-link active flex items-center px-4 py-3 text-gray-300 rounded-lg"
-          >
-            <i class="fas fa-home w-6"></i>
-            <span>Dashboard</span>
-          </a>
-          <a
-            href="#"
-            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
-          >
-            <i class="fas fa-cog w-6"></i>
-            <span>Settings</span>
-          </a>
-          <a
-            href="#"
-            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
-          >
-            <i class="fas fa-chart-bar w-6"></i>
-            <span>Analytics</span>
-          </a>
-          <a
-            href="#"
-            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
-          >
-            <i class="fas fa-users w-6"></i>
-            <span>Team</span>
-          </a>
-        </nav>
-        <div class="p-4 border-t border-gray-700">
+        <div class="user-profile">
           <div class="flex items-center space-x-3">
             <img
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS31IIY-k8jbqZOMxsqqUY4VfN3vcNwM3iyKg&s"
@@ -179,224 +263,236 @@
         </div>
       </div>
 
-      <!-- Main Content -->
-      <div class="flex-1 overflow-hidden">
-        <!-- Top Bar -->
-        <div class="bg-white border-b border-gray-200">
-          <div class="px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <span
-                class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-              >
-                Development
-              </span>
-            </div>
-            <div class="flex items-center space-x-4">
-              <button class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-bell text-xl"></i>
-              </button>
-              <button class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-search text-xl"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main Content Area -->
-        <div class="p-6">
-          <!-- Stats Cards -->
-          <div
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
-          >
-            <div class="card bg-white rounded-lg p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-600">
-                    Total Rulebooks
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900 mt-1">
-                    {{ rulebooks|length }}
-                  </p>
-                </div>
-                <div
-                  class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"
+      <!-- Content Wrapper -->
+      <div class="content-wrapper">
+        <div class="content-area">
+          <!-- Top Bar -->
+          <div class="bg-white border-b border-gray-200">
+            <div class="px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-gray-900">
+                  Rulebook Management
+                </h1>
+                <span
+                  class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
                 >
-                  <i class="fas fa-book text-blue-600 text-xl"></i>
-                </div>
+                  Development
+                </span>
               </div>
-            </div>
-
-            <div class="card bg-white rounded-lg p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-600">Active Rules</p>
-                  <p class="text-2xl font-bold text-gray-900 mt-1">
-                    {{ rulebooks|selectattr('status', 'equalto',
-                    'COMPLETED')|list|length }}
-                  </p>
-                </div>
-                <div
-                  class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"
-                >
-                  <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                </div>
-              </div>
-            </div>
-
-            <div class="card bg-white rounded-lg p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-600">Processing</p>
-                  <p class="text-2xl font-bold text-gray-900 mt-1">
-                    {{ rulebooks|selectattr('status', 'equalto',
-                    'PROCESSING')|list|length }}
-                  </p>
-                </div>
-                <div
-                  class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center"
-                >
-                  <i
-                    class="fas fa-spinner {% if rulebooks|selectattr('status', 'equalto', 'PROCESSING')|list|length > 0 %}fa-spin{% endif %} text-yellow-600 text-xl"
-                  ></i>
-                </div>
-              </div>
-            </div>
-
-            <div class="card bg-white rounded-lg p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-600">Failed</p>
-                  <p class="text-2xl font-bold text-gray-900 mt-1">
-                    {{ rulebooks|selectattr('status', 'equalto',
-                    'FAILED')|list|length }}
-                  </p>
-                </div>
-                <div
-                  class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center"
-                >
-                  <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
-                </div>
+              <div class="flex items-center space-x-4">
+                <button class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-bell text-xl"></i>
+                </button>
+                <button class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-search text-xl"></i>
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- Rulebooks Table -->
-          <div class="table-container">
+          <!-- Main Content Area -->
+          <div class="p-6">
+            <!-- Stats Cards -->
             <div
-              class="px-6 py-4 flex items-center justify-between border-b border-gray-200"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
             >
-              <h2 class="text-lg font-semibold text-gray-900">Rulebooks</h2>
-              <button
-                onclick="showUploadModal()"
-                class="btn-primary px-4 py-2 text-white rounded-lg flex items-center space-x-2"
-              >
-                <i class="fas fa-plus"></i>
-                <span>Upload New Rulebook</span>
-              </button>
+              <div class="card bg-white rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-600">
+                      Total Rulebooks
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">
+                      {{ rulebooks|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"
+                  >
+                    <i class="fas fa-book text-blue-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card bg-white rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-600">
+                      Active Rules
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">
+                      {{ rulebooks|selectattr('status', 'equalto',
+                      'COMPLETED')|list|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"
+                  >
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card bg-white rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-600">Processing</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">
+                      {{ rulebooks|selectattr('status', 'equalto',
+                      'PROCESSING')|list|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center"
+                  >
+                    <i
+                      class="fas fa-spinner {% if rulebooks|selectattr('status', 'equalto', 'PROCESSING')|list|length > 0 %}fa-spin{% endif %} text-yellow-600 text-xl"
+                    ></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card bg-white rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-600">Failed</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">
+                      {{ rulebooks|selectattr('status', 'equalto',
+                      'FAILED')|list|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center"
+                  >
+                    <i
+                      class="fas fa-exclamation-circle text-red-600 text-xl"
+                    ></i>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="table-header">
-                  <tr>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Rulebook
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Description
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Created At
-                    </th>
-                    <th
-                      class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  {% for rulebook in rulebooks %}
-                  <tr class="table-row">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10">
-                          <div
-                            class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center"
-                          >
-                            <i class="fas fa-book text-blue-600"></i>
+
+            <!-- Rulebooks Table -->
+            <div class="table-container">
+              <div
+                class="px-6 py-4 flex items-center justify-between border-b border-gray-200"
+              >
+                <h2 class="text-lg font-semibold text-gray-900">Rulebooks</h2>
+                <button
+                  onclick="showUploadModal()"
+                  class="btn-primary px-4 py-2 text-white rounded-lg flex items-center space-x-2"
+                >
+                  <i class="fas fa-plus"></i>
+                  <span>Upload New Rulebook</span>
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="table-header">
+                    <tr>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Rulebook
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Description
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Created At
+                      </th>
+                      <th
+                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    {% for rulebook in rulebooks %}
+                    <tr class="table-row">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0 h-10 w-10">
+                            <div
+                              class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center"
+                            >
+                              <i class="fas fa-book text-blue-600"></i>
+                            </div>
+                          </div>
+                          <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                              {{ rulebook.rulebook_name }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                              {{ rulebook.original_filename }}
+                            </div>
                           </div>
                         </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900">
-                            {{ rulebook.rulebook_name }}
-                          </div>
-                          <div class="text-sm text-gray-500">
-                            {{ rulebook.original_filename }}
-                          </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">
+                          {{ rulebook.description }}
                         </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4">
-                      <div class="text-sm text-gray-900">
-                        {{ rulebook.description }}
-                      </div>
-                      <div
-                        class="text-xs text-gray-500 mt-1 flex items-center space-x-4"
-                      >
-                        <span class="inline-flex items-center">
-                          <i class="fas fa-file-pdf text-red-500 mr-1"></i>
-                          {{ (rulebook.file_size / 1024 / 1024)|round(2) }} MB
+                        <div
+                          class="text-xs text-gray-500 mt-1 flex items-center space-x-4"
+                        >
+                          <span class="inline-flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 mr-1"></i>
+                            {{ (rulebook.file_size / 1024 / 1024)|round(2) }} MB
+                          </span>
+                          <span class="inline-flex items-center">
+                            <i
+                              class="fas fa-list-check text-green-500 mr-1"
+                            ></i>
+                            {{ rulebook.rules|length }} Rules
+                          </span>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span
+                          class="status-badge {{ rulebook.status.lower() }}"
+                        >
+                          {{ rulebook.status }}
                         </span>
-                        <span class="inline-flex items-center">
-                          <i class="fas fa-list-check text-green-500 mr-1"></i>
-                          {{ rulebook.rules|length }} Rules
-                        </span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="status-badge {{ rulebook.status.lower() }}">
-                        {{ rulebook.status }}
-                      </span>
-                    </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                    >
-                      {{ rulebook.created_at }}
-                    </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                    >
-                      <button
-                        onclick="viewRules('{{ rulebook.uuid }}')"
-                        class="text-blue-600 hover:text-blue-900 mr-3"
-                        title="View Rules"
+                      </td>
+                      <td
+                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
                       >
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <button
-                        onclick="deleteRulebook('{{ rulebook.uuid }}')"
-                        class="text-red-600 hover:text-red-900"
-                        title="Delete Rulebook"
+                        {{ rulebook.created_at }}
+                      </td>
+                      <td
+                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                       >
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                        <button
+                          onclick="viewRules('{{ rulebook.uuid }}')"
+                          class="text-blue-600 hover:text-blue-900 mr-3"
+                          title="View Rules"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          onclick="deleteRulebook('{{ rulebook.uuid }}')"
+                          class="text-red-600 hover:text-red-900"
+                          title="Delete Rulebook"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

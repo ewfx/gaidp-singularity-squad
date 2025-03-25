@@ -1,4 +1,4 @@
-from flask import request, send_file
+from flask import request, send_file, Blueprint, render_template
 from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from ..services.anomaly_service import AnomalyService
@@ -14,6 +14,12 @@ class DateTimeEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         return super().default(obj)
+
+# Create Blueprint for template rendering
+anomaly_bp = Blueprint('anomaly', __name__)
+
+# Create API namespace for REST endpoints
+api = Namespace('anomaly-detection', description='Anomaly Detection operations')
 
 # Create namespace with better description
 api = Namespace(
@@ -58,6 +64,31 @@ validation_parser.add_argument(
 
 # Initialize service
 anomaly_service = AnomalyService()
+
+@anomaly_bp.route('/anomaly-detection')
+def anomaly_detection_page():
+    """Render the anomaly detection page."""
+    return render_template('anomaly_detection.html')
+
+@api.route('/')
+class AnomalyDetectionResource(Resource):
+    def get(self):
+        """Get anomaly detection status and metrics."""
+        # TODO: Implement anomaly detection logic
+        return {
+            'status': 'success',
+            'message': 'Anomaly detection endpoint'
+        }
+
+@api.route('/detect')
+class DetectAnomaliesResource(Resource):
+    def post(self):
+        """Trigger anomaly detection process."""
+        # TODO: Implement anomaly detection process
+        return {
+            'status': 'success',
+            'message': 'Anomaly detection initiated'
+        }
 
 @api.route('/get-anomalies')
 class TransactionAssess(Resource):

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Validation - Compliance Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8fafc;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .main-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        position: relative;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        width: 16rem;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .user-profile {
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .content-wrapper {
+        position: relative;
+        margin-left: 16rem;
+        width: calc(100% - 16rem);
+        min-height: 100vh;
+        background-color: #f8fafc;
+      }
+
+      .content-area {
+        height: 100vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+      }
+
+      .nav-link {
+        transition: all 0.3s ease;
+      }
+
+      .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+      }
+
+      .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left: 4px solid #3b82f6;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 4rem;
+        }
+
+        .content-wrapper {
+          margin-left: 4rem;
+          width: calc(100% - 4rem);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="main-container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-content">
+          <div class="p-6">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-shield-alt text-white text-xl"></i>
+              </div>
+              <span class="text-white text-xl font-semibold"
+                >Compliance Portal</span
+              >
+            </div>
+          </div>
+          <nav class="flex-1 px-4 py-6 space-y-1">
+            <a
+              href="/dashboard"
+              class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+            >
+              <i class="fas fa-home w-6"></i>
+              <span>Rulebook Management</span>
+            </a>
+
+            <a
+              href="/data-validation"
+              class="nav-link active flex items-center px-4 py-3 text-gray-300 rounded-lg"
+            >
+              <i class="fas fa-check-circle w-6"></i>
+              <span>Data Validation</span>
+            </a>
+            <a
+              href="/anomaly-detection"
+              class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+            >
+              <i class="fas fa-exclamation-triangle w-6"></i>
+              <span>Anomaly Detection</span>
+            </a>
+          </nav>
+        </div>
+        <div class="user-profile">
+          <div class="flex items-center space-x-3">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS31IIY-k8jbqZOMxsqqUY4VfN3vcNwM3iyKg&s"
+              class="w-8 h-8 bg-gray-700 rounded-full"
+            />
+            <div class="flex-1">
+              <p class="text-sm text-white font-medium">Ayush Addhyayan</p>
+              <p class="text-xs text-gray-400">Admin</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Wrapper -->
+      <div class="content-wrapper">
+        <div class="content-area">
+          <!-- Top Bar -->
+          <div class="bg-white border-b border-gray-200">
+            <div class="px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-gray-900">
+                  Data Validation
+                </h1>
+                <span
+                  class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                >
+                  Development
+                </span>
+              </div>
+              <div class="flex items-center space-x-4">
+                <button class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-bell text-xl"></i>
+                </button>
+                <button class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-search text-xl"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Content Area -->
+          <div class="p-6">
+            <div class="bg-white rounded-lg shadow p-6">
+              <h2 class="text-xl font-semibold mb-4">
+                Data Validation Dashboard
+              </h2>
+              <p class="text-gray-600">
+                Content for the Data Validation page will be added here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

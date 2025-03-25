@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anomaly Detection - Compliance Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-3.5.1.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"
+    ></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8fafc;
+        overflow: hidden;
+      }
+
+      .main-container {
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        width: 16rem;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+      }
+
+      .content-area {
+        flex: 1;
+        margin-left: 16rem;
+        overflow-y: auto;
+        height: 100vh;
+        background-color: #f8fafc;
+      }
+
+      .upload-section {
+        position: absolute;
+        top: 1rem;
+        right: 1.5rem;
+        z-index: 10;
+      }
+
+      .upload-button {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background-color: #3b82f6;
+        color: white;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .upload-button:hover {
+        background-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .upload-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .upload-modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+      }
+
+      .drop-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        background-color: #f8fafc;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .drop-zone.dragover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+      }
+
+      .chart-container {
+        height: 300px;
+        min-height: 300px;
+        max-height: 300px;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      }
+
+      .nav-link {
+        transition: all 0.3s ease;
+      }
+
+      .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+      }
+
+      .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left: 4px solid #3b82f6;
+      }
+
+      .loader {
+        border: 3px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 3px solid #3b82f6;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        display: none;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .anomaly-card {
+        transition: all 0.3s ease;
+      }
+
+      .anomaly-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      .dataTables_wrapper .dataTables_length select,
+      .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+        margin: 0.5rem;
+      }
+
+      .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        border-radius: 0.375rem;
+        border: 1px solid #e2e8f0;
+      }
+
+      .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #3b82f6 !important;
+        color: white !important;
+        border: 1px solid #3b82f6;
+      }
+
+      .dt-buttons .dt-button {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 0.375rem !important;
+        padding: 0.5rem 1rem !important;
+        margin-right: 0.5rem !important;
+      }
+
+      .anomaly-row {
+        background-color: #fee2e2 !important;
+      }
+
+      .stat-card {
+        transition: all 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 2% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 90%;
+        max-width: 1200px;
+        border-radius: 0.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .detail-row {
+        display: flex;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1rem 0;
+      }
+
+      .detail-label {
+        width: 200px;
+        font-weight: 600;
+        color: #4b5563;
+      }
+
+      .detail-value {
+        flex: 1;
+        color: #1f2937;
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .badge-success {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-warning {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      .badge-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      @media (max-width: 1024px) {
+        .modal-content {
+          width: 95%;
+          margin: 1% auto;
+        }
+
+        .chart-container {
+          height: 250px;
+          min-height: 250px;
+          max-height: 250px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .upload-section {
+          position: relative;
+          top: 0;
+          right: 0;
+          width: 100%;
+          margin-bottom: 1rem;
+        }
+
+        .drop-zone {
+          width: 100%;
+        }
+
+        .chart-container {
+          height: 200px;
+          min-height: 200px;
+          max-height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="main-container">
+      <!-- Sidebar -->
+      <div class="sidebar w-64 min-h-screen flex flex-col">
+        <div class="p-6">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-shield-alt text-white text-xl"></i>
+            </div>
+            <span class="text-white text-xl font-semibold"
+              >Compliance Portal</span
+            >
+          </div>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-1">
+          <a
+            href="/dashboard"
+            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-home w-6"></i>
+            <span>Rulebook Management</span>
+          </a>
+
+          <a
+            href="/data-validation"
+            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-check-circle w-6"></i>
+            <span>Data Validation</span>
+          </a>
+          <a
+            href="/anomaly-detection"
+            class="nav-link active flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-exclamation-triangle w-6"></i>
+            <span>Anomaly Detection</span>
+          </a>
+        </nav>
+        <div class="p-4 border-t border-gray-700">
+          <div class="flex items-center space-x-3">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS31IIY-k8jbqZOMxsqqUY4VfN3vcNwM3iyKg&s"
+              class="w-8 h-8 bg-gray-700 rounded-full"
+            />
+            <div class="flex-1">
+              <p class="text-sm text-white font-medium">Ayush Addhyayan</p>
+              <p class="text-xs text-gray-400">Admin</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="content-area">
+        <!-- Top Bar -->
+        <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div class="px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <h1 class="text-2xl font-bold text-gray-900">
+                Anomaly Detection
+              </h1>
+              <span
+                class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+              >
+                Production
+              </span>
+            </div>
+            <div class="flex items-center space-x-4">
+              <button class="text-gray-500 hover:text-gray-700">
+                <!-- <i class="fas fa-bell text-xl"></i> -->
+              </button>
+              <button class="text-gray-500 hover:text-gray-700">
+                <!-- <i class="fas fa-search text-xl"></i> -->
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="p-6">
+          <!-- Upload Section -->
+          <div class="upload-section">
+            <button id="uploadBtn" class="upload-button">
+              <i class="fas fa-upload mr-2"></i>
+              Upload Data
+            </button>
+          </div>
+
+          <!-- Upload Modal -->
+          <div id="uploadModal" class="upload-modal">
+            <div class="upload-modal-content">
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">
+                  Upload Transaction Data
+                </h2>
+                <button
+                  class="text-gray-500 hover:text-gray-700"
+                  onclick="closeUploadModal()"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-2">
+                  Upload your CSV file containing transaction data for anomaly
+                  detection.
+                </p>
+                <div id="dropZone" class="drop-zone">
+                  <input
+                    type="file"
+                    id="fileInput"
+                    class="hidden"
+                    accept=".csv"
+                  />
+                  <div class="space-y-2">
+                    <i
+                      class="fas fa-cloud-upload-alt text-3xl text-gray-400"
+                    ></i>
+                    <p class="text-sm font-medium text-gray-700">
+                      Drag and drop your CSV file here
+                    </p>
+                    <p class="text-xs text-gray-500">or click to browse</p>
+                  </div>
+                </div>
+              </div>
+              <div id="uploadStatus" class="hidden">
+                <div class="flex items-center space-x-2 p-2 rounded bg-blue-50">
+                  <div class="loader" id="uploadLoader"></div>
+                  <span id="uploadMessage" class="text-sm text-blue-700"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistics Grid -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4"
+          >
+            <div class="bg-white rounded-lg shadow p-6 stat-card">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Total Records
+                </h3>
+                <i class="fas fa-database text-blue-500 text-xl"></i>
+              </div>
+              <div
+                class="text-3xl font-bold text-gray-900 mb-2"
+                id="totalRecords"
+              >
+                -
+              </div>
+              <div class="flex items-center text-sm text-gray-500">
+                <i class="fas fa-chart-line mr-2"></i>
+                <span>Total transactions analyzed</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 stat-card">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Anomalies</h3>
+                <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+              </div>
+              <div
+                class="text-3xl font-bold text-gray-900 mb-2"
+                id="anomalyCount"
+              >
+                -
+              </div>
+              <div class="flex items-center text-sm text-gray-500">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span>Detected anomalies</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 stat-card">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Detection Rate
+                </h3>
+                <i class="fas fa-percentage text-green-500 text-xl"></i>
+              </div>
+              <div
+                class="text-3xl font-bold text-gray-900 mb-2"
+                id="detectionRate"
+              >
+                -
+              </div>
+              <div class="flex items-center text-sm text-gray-500">
+                <i class="fas fa-chart-pie mr-2"></i>
+                <span>Anomaly percentage</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 stat-card">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Last Updated
+                </h3>
+                <i class="fas fa-clock text-yellow-500 text-xl"></i>
+              </div>
+              <div
+                class="text-3xl font-bold text-gray-900 mb-2"
+                id="lastUpdated"
+              >
+                -
+              </div>
+              <div class="flex items-center text-sm text-gray-500">
+                <i class="fas fa-history mr-2"></i>
+                <span>Last analysis time</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <div class="bg-white rounded-lg shadow p-4">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                Anomaly Distribution Over Time
+              </h3>
+              <div id="timeSeriesPlot" class="chart-container"></div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-4">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                Pattern Analysis
+              </h3>
+              <div id="patternPlot" class="chart-container"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <div class="bg-white rounded-lg shadow p-4">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                Regional Distribution
+              </h3>
+              <div id="regionalPlot" class="chart-container"></div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-4">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                Transaction Type Analysis
+              </h3>
+              <div id="transactionTypePlot" class="chart-container"></div>
+            </div>
+          </div>
+
+          <!-- Data Table Section -->
+          <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+              Detailed Anomaly Analysis
+            </h3>
+            <div class="overflow-x-auto">
+              <table id="anomalyTable" class="w-full display responsive nowrap">
+                <thead>
+                  <tr>
+                    <th>Record ID</th>
+                    <th>Timestamp</th>
+                    <th>Transaction Type</th>
+                    <th>Amount</th>
+                    <th>Region</th>
+                    <th>Risk Score</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction Details Modal -->
+    <div id="transactionModal" class="modal">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">Transaction Details</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div id="transactionDetails"></div>
+        <div class="mt-6 flex justify-end space-x-4">
+          <button
+            onclick="exportTransactionDetails()"
+            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Export Details
+          </button>
+          <button
+            onclick="closeModal()"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Upload Modal Functionality
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadModal = document.getElementById("uploadModal");
+
+      uploadBtn.onclick = function () {
+        uploadModal.style.display = "block";
+      };
+
+      function closeUploadModal() {
+        uploadModal.style.display = "none";
+      }
+
+      window.onclick = function (event) {
+        if (event.target == uploadModal) {
+          closeUploadModal();
+        } else if (event.target == modal) {
+          closeModal();
+        }
+      };
+
+      // File Upload Handling
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("fileInput");
+      const uploadStatus = document.getElementById("uploadStatus");
+      const uploadLoader = document.getElementById("uploadLoader");
+      const uploadMessage = document.getElementById("uploadMessage");
+
+      // Initialize DataTable with enhanced features
+      let anomalyTable = $("#anomalyTable").DataTable({
+        dom: '<"flex justify-between items-center mb-4"<"flex items-center"l><"flex"f>><"my-4"rt><"flex justify-between"<"flex items-center"i><"flex items-center"p>>B',
+        buttons: [
+          {
+            extend: "csv",
+            className:
+              "px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mr-2",
+            text: '<i class="fas fa-download mr-2"></i>Export CSV',
+          },
+          {
+            extend: "excel",
+            className:
+              "px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600",
+            text: '<i class="fas fa-file-excel mr-2"></i>Export Excel',
+          },
+        ],
+        pageLength: 10,
+        responsive: true,
+        order: [[5, "desc"]],
+        columns: [
+          { data: "id" },
+          { data: "timestamp" },
+          { data: "type" },
+          { data: "amount" },
+          { data: "region" },
+          { data: "risk_score" },
+          { data: "status" },
+          { data: "actions" },
+        ],
+        columnDefs: [
+          {
+            targets: -1,
+            orderable: false,
+          },
+          {
+            targets: 6,
+            render: function (data, type, row) {
+              let badgeClass =
+                data === "Anomaly" ? "badge-danger" : "badge-success";
+              return `<span class="badge ${badgeClass}">${data}</span>`;
+            },
+          },
+          {
+            targets: 5,
+            render: function (data, type, row) {
+              let score = parseFloat(data);
+              let color =
+                score > 0.7
+                  ? "text-red-600"
+                  : score > 0.4
+                  ? "text-yellow-600"
+                  : "text-green-600";
+              return `<span class="${color} font-semibold">${data}</span>`;
+            },
+          },
+        ],
+        createdRow: function (row, data, dataIndex) {
+          if (data.status === "Anomaly") {
+            $(row).addClass("anomaly-row");
+          }
+        },
+      });
+
+      // File Upload Event Handlers
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      dropZone.addEventListener("drop", handleDrop, false);
+      dropZone.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", handleFileSelect);
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function highlight(e) {
+        dropZone.classList.add("dragover");
+      }
+
+      function unhighlight(e) {
+        dropZone.classList.remove("dragover");
+      }
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+      }
+
+      function handleFileSelect(e) {
+        const files = e.target.files;
+        handleFiles(files);
+      }
+
+      function handleFiles(files) {
+        if (files.length === 0) return;
+        const file = files[0];
+        if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+          alert("Please upload a CSV file");
+          return;
+        }
+        uploadFile(file);
+      }
+
+      function uploadFile(file) {
+        uploadStatus.classList.remove("hidden");
+        uploadLoader.style.display = "inline-block";
+        uploadMessage.textContent = "Uploading and processing file...";
+
+        const formData = new FormData();
+        formData.append("transactions", file);
+
+        fetch("http://localhost:5001/anomalies/get-anomalies", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            uploadLoader.style.display = "none";
+            uploadMessage.textContent = "File processed successfully!";
+            updateDashboard(data);
+            closeUploadModal();
+          })
+          .catch((error) => {
+            uploadLoader.style.display = "none";
+            uploadMessage.textContent =
+              "Error processing file. Please try again.";
+            console.error("Error:", error);
+          });
+      }
+
+      function updateDashboard(data) {
+        const anomalies = JSON.parse(data);
+        updateStatistics(anomalies);
+        updateVisualizations(anomalies);
+        updateDataTable(anomalies);
+      }
+
+      function updateStatistics(anomalies) {
+        const totalCount = anomalies.length;
+        const anomalyCount = anomalies.filter((x) => x === 1).length;
+        const detectionRate = ((anomalyCount / totalCount) * 100).toFixed(2);
+        const now = new Date().toLocaleTimeString();
+
+        document.getElementById("totalRecords").textContent = totalCount;
+        document.getElementById("anomalyCount").textContent = anomalyCount;
+        document.getElementById(
+          "detectionRate"
+        ).textContent = `${detectionRate}%`;
+        document.getElementById("lastUpdated").textContent = now;
+      }
+
+      function updateVisualizations(anomalies) {
+        // Time Series Plot - Changed to an area chart with gradient
+        const timeData = [];
+        const normalCount = [];
+        const anomalyCount = [];
+
+        // Group data by 5-minute intervals for more granular view
+        const interval = 5;
+        for (let i = 0; i < anomalies.length; i += interval) {
+          const slice = anomalies.slice(i, i + interval);
+          const normal = slice.filter((x) => x === 0).length;
+          const anomaly = slice.filter((x) => x === 1).length;
+
+          let date = new Date();
+          date.setMinutes(
+            date.getMinutes() - ((anomalies.length - i) / interval) * 5
+          );
+
+          timeData.push(date);
+          normalCount.push(normal);
+          anomalyCount.push(anomaly);
+        }
+
+        const timeSeriesData = [
+          {
+            x: timeData,
+            y: normalCount,
+            name: "Normal Transactions",
+            type: "scatter",
+            mode: "lines",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#60a5fa",
+            },
+            fill: "tonexty",
+            fillcolor: "rgba(96, 165, 250, 0.1)",
+          },
+          {
+            x: timeData,
+            y: anomalyCount,
+            name: "Anomalous Transactions",
+            type: "scatter",
+            mode: "lines+markers",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#f87171",
+            },
+            marker: {
+              size: 6,
+              color: "#ef4444",
+              line: {
+                color: "#fff",
+                width: 1,
+              },
+            },
+            fill: "tonexty",
+            fillcolor: "rgba(248, 113, 113, 0.1)",
+          },
+        ];
+
+        const timeSeriesLayout = {
+          margin: { t: 20, r: 20, b: 40, l: 40 },
+          xaxis: {
+            title: "Time (5-minute intervals)",
+            type: "date",
+            tickformat: "%H:%M",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
+          },
+          yaxis: {
+            title: "Number of Transactions",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
+            zeroline: false,
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+          hovermode: "x unified",
+        };
+
+        // Pattern Analysis - Changed to a dual-axis line chart
+        const trendData = [];
+        const cumulativeAnomalies = [];
+        let cumulative = 0;
+
+        for (let i = 0; i < timeData.length; i++) {
+          const anomalyRate =
+            (anomalyCount[i] / (normalCount[i] + anomalyCount[i])) * 100;
+          trendData.push(anomalyRate);
+
+          cumulative += anomalyCount[i];
+          cumulativeAnomalies.push(cumulative);
+        }
+
+        const patternData = [
+          {
+            x: timeData,
+            y: trendData,
+            name: "Anomaly Rate",
+            type: "scatter",
+            mode: "lines",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#8b5cf6",
+            },
+            yaxis: "y",
+          },
+          {
+            x: timeData,
+            y: cumulativeAnomalies,
+            name: "Cumulative Anomalies",
+            type: "scatter",
+            mode: "lines",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#f59e0b",
+            },
+            yaxis: "y2",
+          },
+        ];
+
+        const patternLayout = {
+          margin: { t: 20, r: 50, b: 40, l: 50 },
+          xaxis: {
+            title: "Time",
+            type: "date",
+            tickformat: "%H:%M",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
+          },
+          yaxis: {
+            title: "Anomaly Rate (%)",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
+            zeroline: false,
+            range: [0, 100],
+          },
+          yaxis2: {
+            title: "Cumulative Anomalies",
+            overlaying: "y",
+            side: "right",
+            showgrid: false,
+            zeroline: false,
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+          hovermode: "x unified",
+        };
+
+        // Regional Distribution Data
+        const regions = ["North", "South", "East", "West", "Central"];
+        const regionalData = regions.map((region) => ({
+          region,
+          total: Math.floor(Math.random() * 100),
+          anomalies: Math.floor(Math.random() * 30),
+        }));
+
+        const regionalPlotData = [
+          {
+            x: regions,
+            y: regionalData.map((d) => d.total),
+            name: "Total Transactions",
+            type: "bar",
+            marker: {
+              color: "#3b82f6",
+            },
+          },
+          {
+            x: regions,
+            y: regionalData.map((d) => d.anomalies),
+            name: "Anomalies",
+            type: "bar",
+            marker: {
+              color: "#ef4444",
+            },
+          },
+        ];
+
+        // Transaction Type Data
+        const transactionTypes = [
+          "Payment",
+          "Transfer",
+          "Withdrawal",
+          "Deposit",
+        ];
+        const typeData = transactionTypes.map((type) => ({
+          type,
+          normal: Math.floor(Math.random() * 100),
+          anomaly: Math.floor(Math.random() * 20),
+        }));
+
+        const transactionTypePlotData = [
+          {
+            values: typeData.map((d) => d.normal + d.anomaly),
+            labels: transactionTypes,
+            type: "pie",
+            hole: 0.4,
+            marker: {
+              colors: ["#3b82f6", "#34d399", "#f59e0b", "#8b5cf6"],
+            },
+            textinfo: "label+percent",
+            textposition: "outside",
+            automargin: true,
+          },
+        ];
+
+        const config = {
+          responsive: true,
+          displayModeBar: false,
+        };
+
+        // Plot all charts
+        Plotly.newPlot(
+          "timeSeriesPlot",
+          timeSeriesData,
+          timeSeriesLayout,
+          config
+        );
+        Plotly.newPlot("patternPlot", patternData, patternLayout, config);
+
+        const regionalLayout = {
+          margin: { t: 20, r: 20, b: 40, l: 40 },
+          barmode: "group",
+          xaxis: {
+            title: "Region",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+          },
+          yaxis: {
+            title: "Number of Transactions",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+        };
+        Plotly.newPlot(
+          "regionalPlot",
+          regionalPlotData,
+          regionalLayout,
+          config
+        );
+
+        const transactionTypeLayout = {
+          margin: { t: 20, r: 20, b: 20, l: 20 },
+          showlegend: false,
+          annotations: [
+            {
+              font: { size: 14 },
+              showarrow: false,
+              text: "Transaction Types",
+              x: 0.5,
+              y: 0.5,
+            },
+          ],
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+        };
+        Plotly.newPlot(
+          "transactionTypePlot",
+          transactionTypePlotData,
+          transactionTypeLayout,
+          config
+        );
+
+        // Add resize handlers
+        window.addEventListener("resize", function () {
+          Plotly.Plots.resize("timeSeriesPlot");
+          Plotly.Plots.resize("patternPlot");
+          Plotly.Plots.resize("regionalPlot");
+          Plotly.Plots.resize("transactionTypePlot");
+        });
+      }
+
+      function updateDataTable(anomalies) {
+        const regions = ["North", "South", "East", "West", "Central"];
+        const tableData = anomalies.map((value, index) => ({
+          id: `TXN-${(index + 1).toString().padStart(6, "0")}`,
+          timestamp: new Date(
+            Date.now() - Math.random() * 86400000
+          ).toLocaleString(),
+          type: ["Payment", "Transfer", "Withdrawal", "Deposit"][
+            Math.floor(Math.random() * 4)
+          ],
+          amount: `$${(Math.random() * 10000).toFixed(2)}`,
+          region: regions[Math.floor(Math.random() * regions.length)],
+          risk_score:
+            value === 1
+              ? (Math.random() * 0.5 + 0.5).toFixed(2)
+              : (Math.random() * 0.3).toFixed(2),
+          status: value === 1 ? "Anomaly" : "Normal",
+          actions: `<button class="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600" onclick="viewDetails('${index}')">View Details</button>`,
+          // Additional details for modal
+          ip_address: `${Math.floor(Math.random() * 256)}.${Math.floor(
+            Math.random() * 256
+          )}.${Math.floor(Math.random() * 256)}.${Math.floor(
+            Math.random() * 256
+          )}`,
+          user_agent:
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          device_id: `DEV-${Math.random()
+            .toString(36)
+            .substr(2, 9)
+            .toUpperCase()}`,
+          merchant: `Merchant-${Math.floor(Math.random() * 100)}`,
+          currency: "USD",
+          transaction_method: [
+            "Credit Card",
+            "Debit Card",
+            "Bank Transfer",
+            "Digital Wallet",
+          ][Math.floor(Math.random() * 4)],
+          customer_id: `CUST-${Math.random()
+            .toString(36)
+            .substr(2, 9)
+            .toUpperCase()}`,
+          customer_since: new Date(
+            Date.now() - Math.random() * 31536000000
+          ).toLocaleDateString(),
+          previous_transactions: Math.floor(Math.random() * 100),
+          anomaly_factors:
+            value === 1
+              ? [
+                  "Unusual transaction amount",
+                  "Suspicious IP address",
+                  "Multiple transactions in short time",
+                  "Different region than usual",
+                ].slice(0, Math.floor(Math.random() * 3) + 1)
+              : [],
+        }));
+
+        anomalyTable.clear();
+        anomalyTable.rows.add(tableData);
+        anomalyTable.draw();
+      }
+
+      // Modal functionality
+      const modal = document.getElementById("transactionModal");
+      const span = document.getElementsByClassName("close")[0];
+
+      span.onclick = closeModal;
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          closeModal();
+        }
+      };
+
+      function closeModal() {
+        modal.style.display = "none";
+      }
+
+      function viewDetails(index) {
+        const data = anomalyTable.row(index).data();
+        const detailsHtml = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Transaction Information</h3>
+              <div class="detail-row">
+                <div class="detail-label">Transaction ID</div>
+                <div class="detail-value">${data.id}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Timestamp</div>
+                <div class="detail-value">${data.timestamp}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Type</div>
+                <div class="detail-value">${data.type}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Amount</div>
+                <div class="detail-value">${data.amount}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Region</div>
+                <div class="detail-value">${data.region}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Risk Score</div>
+                <div class="detail-value">
+                  <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${
+                      data.risk_score * 100
+                    }%"></div>
+                  </div>
+                  ${data.risk_score}
+                </div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Status</div>
+                <div class="detail-value">
+                  <span class="badge ${
+                    data.status === "Anomaly" ? "badge-danger" : "badge-success"
+                  }">${data.status}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Additional Details</h3>
+              <div class="detail-row">
+                <div class="detail-label">IP Address</div>
+                <div class="detail-value">${data.ip_address}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Device ID</div>
+                <div class="detail-value">${data.device_id}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Merchant</div>
+                <div class="detail-value">${data.merchant}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Transaction Method</div>
+                <div class="detail-value">${data.transaction_method}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Customer ID</div>
+                <div class="detail-value">${data.customer_id}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Customer Since</div>
+                <div class="detail-value">${data.customer_since}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Previous Transactions</div>
+                <div class="detail-value">${data.previous_transactions}</div>
+              </div>
+              ${
+                data.anomaly_factors.length > 0
+                  ? `
+                <div class="detail-row">
+                  <div class="detail-label">Anomaly Factors</div>
+                  <div class="detail-value">
+                    <ul class="list-disc pl-4">
+                      ${data.anomaly_factors
+                        .map(
+                          (factor) => `<li class="text-red-600">${factor}</li>`
+                        )
+                        .join("")}
+                    </ul>
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+
+        document.getElementById("transactionDetails").innerHTML = detailsHtml;
+        modal.style.display = "block";
+      }
+
+      function exportTransactionDetails() {
+        const data = anomalyTable
+          .row(
+            document
+              .querySelector("#transactionDetails")
+              .getAttribute("data-index")
+          )
+          .data();
+        const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
+          JSON.stringify(data, null, 2)
+        )}`;
+        const link = document.createElement("a");
+        link.href = jsonString;
+        link.download = `transaction_${data.id}_details.json`;
+        link.click();
+      }
+    </script>
+  </body>
+</html>
