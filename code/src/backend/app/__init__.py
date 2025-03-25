@@ -51,10 +51,11 @@ def create_app():
     # Register namespaces
     from .controllers.rulebook_controller import api as rulebook_ns
     from .controllers.dashboard_controller import dashboard_bp
+    from .controllers.anomaly_controller import api as anomaly
     api.add_namespace(rulebook_ns)
     app.register_blueprint(dashboard_bp)
     
+    api.add_namespace(anomaly) 
     # Initialize API with app
-    api.init_app(app)
-    
+    api.init_app(app)  
     return app 
