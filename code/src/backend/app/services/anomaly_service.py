@@ -35,6 +35,7 @@ class AnomalyService:
         """
 
         df = pd.read_csv(csv_file_path)
+        df=df[1::]
         numeric_features = df.select_dtypes(include=[np.number]).columns
         df_model = df[numeric_features].dropna().copy()
         scaler = StandardScaler()
