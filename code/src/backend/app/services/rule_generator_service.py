@@ -11,12 +11,19 @@ import re
 import io
 import yaml
 import logging
+import time
 
 class RuleGeneratorService:
     def __init__(self):
-        # Configure Google API
-        genai.configure(api_key=Config.GOOGLE_API_KEY)
+        # Initialize logger first
         self.logger = logging.getLogger(__name__)
+        
+        # Initialize Gemini model
+        api_key = Config.GOOGLE_API_KEY
+        self.logger.info(f"Initializing Gemini model with API key: {api_key[:5]}...")
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.logger.info("Gemini model initialized successfully")
 
     async def generate_rules(self, pdf_path: str) -> List[Rule]:
         """Generate rules from PDF using Gemini"""
@@ -63,12 +70,13 @@ rules:
 Return ONLY the YAML structure, nothing else."""
 
             # Generate content
-            model = genai.GenerativeModel('gemini-1.5-flash')
             parts = [
                 {'text': prompt},
                 {'inline_data': {'mime_type': 'application/pdf', 'data': pdf_content}}
             ]
-            response = await model.generate_content_async(
+            
+            # Use the current event loop for the async call
+            response = await self.model.generate_content_async(
                 parts,
                 request_options={"timeout": 600}  # Set timeout to 10 minutes
             )
@@ -168,4 +176,139 @@ Return ONLY the YAML structure, nothing else."""
             return False
         except re.error:
             # If regex pattern is invalid, consider it a violation
-            return False 
+            return False
+
+    def generate_rules_sync(self, pdf_path):
+        """Generate rules from PDF synchronously"""
+        try:
+            # Read PDF file
+            self.logger.info(f"Reading PDF file: {pdf_path}")
+            with open(pdf_path, 'rb') as f:
+                pdf_file = f.read()
+            
+            # Create a file-like object
+            pdf_file_obj = io.BytesIO(pdf_file)
+            
+            # Define the prompt for the model
+            prompt = """Analyze this regulatory document and extract ALL rules in the following YAML format:
+rules:
+  - column_name: name_of_csv_column
+    description: clear description of the rule
+    regex_pattern: valid python regex pattern
+
+Guidelines:
+1. Extract ALL rules from the document
+2. column_name must be a valid CSV column name (no spaces, use underscores)
+3. description should be clear and concise
+4. regex_pattern must be a valid Python regex pattern that:
+   - For numbers: r"^\\d+$" or r"^\\d{1,3}(,\\d{3})*(\\.\\d{2})?$"
+   - For dates: r"^\\d{4}-\\d{2}-\\d{2}$"
+   - For text: r"(?i).*required.*"
+   - For currency: r"^\\$?\\d{1,3}(,\\d{3})*(\\.\\d{2})?$"
+   - For percentages: r"^\\d+(\\.\\d+)?%$"
+   - For email: r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+   - For phone: r"^\\+?\\d{10,15}$"
+
+Example rules:
+rules:
+  - column_name: total_assets
+    description: Total assets must be at least $100 billion
+    regex_pattern: ^\\d+$
+  - column_name: submission_date
+    description: Report must be submitted by the specified date
+    regex_pattern: ^\\d{4}-\\d{2}-\\d{2}$
+  - column_name: report_type
+    description: Report must be submitted via Reporting Central
+    regex_pattern: (?i).*reporting\\s+central.*
+
+Return ONLY the YAML structure, nothing else."""
+
+            # Generate content using the model with retries
+            max_retries = 3
+            retry_delay = 5  # seconds
+            last_error = None
+            
+            for attempt in range(max_retries):
+                try:
+                    self.logger.info(f"Generating content with Gemini model (attempt {attempt + 1}/{max_retries})...")
+                    parts = [
+                        {'text': prompt},
+                        {'inline_data': {'mime_type': 'application/pdf', 'data': pdf_file}}
+                    ]
+                    
+                    # Set a longer timeout (5 minutes)
+                    response = self.model.generate_content(
+                        parts,
+                        request_options={"timeout": 300}  # 5 minutes timeout
+                    )
+                    self.logger.info("Received response from Gemini model")
+                    break
+                    
+                except Exception as e:
+                    last_error = e
+                    self.logger.warning(f"Attempt {attempt + 1} failed: {str(e)}")
+                    if attempt < max_retries - 1:
+                        self.logger.info(f"Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                    else:
+                        raise Exception(f"Failed after {max_retries} attempts. Last error: {str(last_error)}")
+            
+            # Clean the response by removing markdown code block markers
+            cleaned_response = response.text.strip()
+            if cleaned_response.startswith('```yaml'):
+                cleaned_response = cleaned_response[7:]
+            if cleaned_response.endswith('```'):
+                cleaned_response = cleaned_response[:-3]
+            cleaned_response = cleaned_response.strip()
+            
+            # Log the cleaned response for debugging
+            self.logger.info(f"Cleaned response: {cleaned_response[:200]}...")
+            
+            # Parse the response
+            try:
+                # Try parsing as YAML first
+                rules_data = yaml.safe_load(cleaned_response)
+                if not rules_data or 'rules' not in rules_data:
+                    raise ValueError("No valid YAML structure found in response")
+                
+                rules = rules_data['rules']
+                self.logger.info(f"Successfully parsed {len(rules)} rules from YAML")
+            except yaml.YAMLError as e:
+                self.logger.warning(f"YAML parsing failed: {str(e)}")
+                try:
+                    # If YAML parsing fails, try JSON
+                    rules_data = json.loads(cleaned_response)
+                    if not rules_data or 'rules' not in rules_data:
+                        raise ValueError("No valid JSON structure found in response")
+                    rules = rules_data['rules']
+                    self.logger.info(f"Successfully parsed {len(rules)} rules from JSON")
+                except json.JSONDecodeError as e:
+                    self.logger.error(f"JSON parsing failed: {str(e)}")
+                    raise ValueError("Failed to parse model response as YAML or JSON")
+            
+            # Validate and format rules
+            formatted_rules = []
+            for rule in rules:
+                if not all(key in rule for key in ['column_name', 'description', 'regex_pattern']):
+                    self.logger.warning(f"Skipping invalid rule: {rule}")
+                    continue
+                
+                # Validate regex pattern
+                try:
+                    re.compile(rule['regex_pattern'])
+                except re.error as e:
+                    self.logger.warning(f"Invalid regex pattern in rule: {rule['regex_pattern']}")
+                    continue
+                
+                formatted_rules.append({
+                    'column_name': rule['column_name'],
+                    'description': rule['description'],
+                    'regex_pattern': rule['regex_pattern']
+                })
+            
+            self.logger.info(f"Successfully generated {len(formatted_rules)} valid rules")
+            return formatted_rules
+            
+        except Exception as e:
+            self.logger.error(f"Error generating rules: {str(e)}")
+            raise Exception(f"Error generating rules: {str(e)}") 

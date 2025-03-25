@@ -25,12 +25,9 @@ api = Namespace(
 
 # Define detailed response models with examples
 rule_model = api.model('Rule', {
-    'rule_id': fields.String(required=True, description='Unique identifier for the rule'),
+    'column_name': fields.String(required=True, description='Name of the column in the CSV file'),
     'description': fields.String(required=True, description='Description of the rule'),
-    'condition': fields.String(required=True, description='Condition that must be met'),
-    'severity': fields.String(required=True, description='Severity level (HIGH, MEDIUM, LOW)'),
-    'category': fields.String(required=True, description='Category of the rule'),
-    'created_at': fields.DateTime(required=True, description='When the rule was created')
+    'regex_pattern': fields.String(required=True, description='Regular expression pattern for validation')
 })
 
 rulebook_model = api.model('Rulebook', {
@@ -100,47 +97,40 @@ class RulebookUpload(Resource):
         }
     )
     def post(self):
-        """Upload a new regulatory rulebook PDF file
-        
-        This endpoint accepts a PDF file containing regulatory rules along with the rulebook name.
-        The backend will automatically:
-        - Generate a unique UUID
-        - Create a description based on the rulebook name
-        - Store the file securely
-        - Extract text from the PDF
-        - Generate rules using LangChain and Gemini
-        - Track metadata like file size and creation time
-        
-        The uploaded file must be:
-        - A valid PDF file
-        - Less than 10MB in size
-        """
-        args = upload_parser.parse_args()
-        file = args['file']
-        rulebook_name = args['rulebook_name']
-        
-        if not file:
-            api.abort(400, "No file provided")
-            
-        if not is_pdf(file):
-            api.abort(400, "File must be a PDF")
-        
+        """Upload a new regulatory rulebook PDF file"""
         try:
+            args = upload_parser.parse_args()
+            file = args['file']
+            rulebook_name = args['rulebook_name']
+            
+            if not file:
+                api.abort(400, "No file provided")
+                
+            if not is_pdf(file):
+                api.abort(400, "File must be a PDF")
+            
+            if not rulebook_name:
+                api.abort(400, "Rulebook name is required")
+            
             # Generate a description based on the rulebook name
             description = f"Regulatory framework for {rulebook_name}"
             
-            # Create rulebook
-            rulebook = asyncio.run(rulebook_service.create_rulebook(file, rulebook_name, description))
+            # Create rulebook synchronously
+            rulebook = rulebook_service.create_rulebook_sync(file, rulebook_name, description)
             
-            # Convert to dict and handle datetime serialization
-            rulebook_dict = rulebook
-            if isinstance(rulebook_dict['created_at'], datetime):
-                rulebook_dict['created_at'] = rulebook_dict['created_at'].isoformat()
-            for rule in rulebook_dict.get('rules', []):
-                if 'created_at' in rule and isinstance(rule['created_at'], datetime):
-                    rule['created_at'] = rule['created_at'].isoformat()
+            # Convert datetime to ISO format string
+            if isinstance(rulebook, dict):
+                if 'created_at' in rulebook:
+                    if isinstance(rulebook['created_at'], datetime):
+                        rulebook['created_at'] = rulebook['created_at'].isoformat()
             
-            return rulebook_dict, 201
+            # Return success response
+            return {
+                'success': True,
+                'message': 'Rulebook uploaded successfully',
+                'rulebook': rulebook
+            }, 201
+            
         except Exception as e:
             api.abort(500, f"Error creating rulebook: {str(e)}")
 
@@ -159,18 +149,57 @@ class RulebookResource(Resource):
     @api.marshal_with(rulebook_model)
     def get(self, uuid):
         """Get rulebook metadata by UUID"""
-        rulebook = rulebook_service.get_rulebook(uuid)
-        if not rulebook:
-            api.abort(404, "Rulebook not found")
-        
-        # Convert to dict and handle datetime serialization
-        rulebook_dict = rulebook
-        rulebook_dict['created_at'] = rulebook_dict['created_at'].isoformat()
-        for rule in rulebook_dict.get('rules', []):
-            if 'created_at' in rule:
-                rule['created_at'] = rule['created_at'].isoformat()
-        
-        return rulebook_dict
+        try:
+            rulebook = rulebook_service.get_rulebook(uuid)
+            if not rulebook:
+                return {'success': False, 'message': 'Rulebook not found'}, 404
+            
+            # Handle created_at field if it exists
+            if isinstance(rulebook, dict):
+                if 'created_at' in rulebook:
+                    try:
+                        if isinstance(rulebook['created_at'], str):
+                            # If it's already a string, try to parse it to datetime
+                            rulebook['created_at'] = datetime.fromisoformat(rulebook['created_at'].replace('Z', '+00:00'))
+                        rulebook['created_at'] = rulebook['created_at'].isoformat()
+                    except (ValueError, AttributeError):
+                        # If there's any issue with the datetime, remove the field
+                        del rulebook['created_at']
+                
+                return rulebook
+            else:
+                # If rulebook is an object with to_dict method
+                rulebook_dict = rulebook.to_dict()
+                if 'created_at' in rulebook_dict:
+                    try:
+                        if isinstance(rulebook_dict['created_at'], str):
+                            rulebook_dict['created_at'] = datetime.fromisoformat(rulebook_dict['created_at'].replace('Z', '+00:00'))
+                        rulebook_dict['created_at'] = rulebook_dict['created_at'].isoformat()
+                    except (ValueError, AttributeError):
+                        del rulebook_dict['created_at']
+                return rulebook_dict
+        except Exception as e:
+            api.abort(500, f"Error getting rulebook: {str(e)}")
+
+    @api.response(200, 'Rulebook deleted successfully')
+    @api.response(404, 'Rulebook not found', error_model)
+    @api.doc(
+        description='Delete a rulebook',
+        responses={
+            200: 'Rulebook deleted successfully',
+            404: 'Rulebook not found'
+        }
+    )
+    def delete(self, uuid):
+        """Delete a rulebook by UUID"""
+        try:
+            success = rulebook_service.delete_rulebook(uuid)
+            if success:
+                return {'success': True, 'message': 'Rulebook deleted successfully'}
+            else:
+                api.abort(404, "Rulebook not found")
+        except Exception as e:
+            api.abort(500, f"Error deleting rulebook: {str(e)}")
 
 @api.route('/rulebooks')
 class RulebookList(Resource):

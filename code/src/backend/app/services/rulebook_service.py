@@ -14,12 +14,14 @@ import google.generativeai as genai
 from typing import List
 import time
 import pdfplumber
+import logging
 
 class RulebookService:
     def __init__(self):
-        self.rule_generator = RuleGeneratorService()
         self.base_path = Config.UPLOAD_FOLDER
-        os.makedirs(self.base_path, exist_ok=True)
+        self.logger = logging.getLogger(__name__)
+        self.rule_generator = RuleGeneratorService()
+        self.logger.info(f"Initialized RulebookService with base path: {self.base_path}")
 
     def _extract_text_from_pdf(self, pdf_path: str) -> str:
         """Extract relevant regulatory text from PDF file using pdfplumber"""
@@ -184,6 +186,30 @@ class RulebookService:
         except Exception as e:
             raise Exception(f"Error retrieving rulebooks: {str(e)}")
 
+    def delete_rulebook(self, uuid: str) -> bool:
+        """Delete a rulebook by UUID"""
+        try:
+            rulebook_dir = os.path.join(self.base_path, uuid)
+            if not os.path.exists(rulebook_dir):
+                return False
+            
+            # Remove all files in the directory
+            for file in os.listdir(rulebook_dir):
+                file_path = os.path.join(rulebook_dir, file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    self.logger.error(f"Error deleting file {file_path}: {str(e)}")
+            
+            # Remove the directory itself
+            os.rmdir(rulebook_dir)
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error deleting rulebook {uuid}: {str(e)}")
+            raise Exception(f"Error deleting rulebook: {str(e)}")
+
     def validate_transactions(self, csv_file, rulebook_uuid: str) -> List[dict]:
         """Validate transactions from CSV against rulebook rules"""
         try:
@@ -234,4 +260,68 @@ class RulebookService:
             return violations
             
         except Exception as e:
-            raise Exception(f"Error validating transactions: {str(e)}") 
+            raise Exception(f"Error validating transactions: {str(e)}")
+
+    def create_rulebook_sync(self, file, rulebook_name, description):
+        """Create a new rulebook synchronously"""
+        try:
+            # Generate UUID
+            rulebook_uuid = str(uuid.uuid4())
+            self.logger.info(f"Creating new rulebook with UUID: {rulebook_uuid}")
+            
+            # Create directory for rulebook
+            rulebook_dir = os.path.join(self.base_path, rulebook_uuid)
+            os.makedirs(rulebook_dir, exist_ok=True)
+            self.logger.info(f"Created rulebook directory: {rulebook_dir}")
+            
+            # Save uploaded file
+            file_path = os.path.join(rulebook_dir, file.filename)
+            file.save(file_path)
+            self.logger.info(f"Saved uploaded file to: {file_path}")
+            
+            # Create initial metadata
+            metadata = {
+                'uuid': rulebook_uuid,
+                'rulebook_name': rulebook_name,
+                'description': description,
+                'file_path': file_path,
+                'created_at': datetime.now(),
+                'file_size': os.path.getsize(file_path),
+                'original_filename': file.filename,
+                'status': 'PROCESSING'
+            }
+            
+            # Save initial metadata
+            metadata_path = os.path.join(rulebook_dir, 'metadata.json')
+            with open(metadata_path, 'w') as f:
+                json.dump(metadata, f, default=str)
+            self.logger.info(f"Saved initial metadata to: {metadata_path}")
+            
+            try:
+                # Generate rules from PDF
+                self.logger.info("Starting rule generation from PDF")
+                rules = self.rule_generator.generate_rules_sync(file_path)
+                self.logger.info(f"Generated {len(rules)} rules from PDF")
+                
+                # Update metadata with generated rules
+                metadata['rules'] = rules
+                metadata['status'] = 'COMPLETED'
+                
+                # Save updated metadata
+                with open(metadata_path, 'w') as f:
+                    json.dump(metadata, f, default=str)
+                self.logger.info("Updated metadata with generated rules")
+                
+                return metadata
+                
+            except Exception as e:
+                self.logger.error(f"Error during rule generation: {str(e)}")
+                metadata['status'] = 'FAILED'
+                metadata['processing_error'] = str(e)
+                with open(metadata_path, 'w') as f:
+                    json.dump(metadata, f, default=str)
+                raise Exception(f"Error generating rules: {str(e)}")
+            
+        except Exception as e:
+            self.logger.error(f"Error creating rulebook: {str(e)}")
+            raise Exception(f"Error creating rulebook: {str(e)}") 
