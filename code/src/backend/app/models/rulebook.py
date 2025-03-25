@@ -5,12 +5,9 @@ from pydantic import BaseModel, ConfigDict
 class Rule(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
-    rule_id: str
-    description: str
-    condition: str
-    severity: str  # HIGH, MEDIUM, LOW
-    category: str
-    created_at: datetime
+    column_name: str  # Name of the CSV column to validate
+    description: str  # Description of the rule
+    regex_pattern: str  # Regex pattern for validation
 
 class Rulebook(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
