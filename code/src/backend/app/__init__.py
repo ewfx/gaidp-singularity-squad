@@ -46,6 +46,7 @@ def create_app():
     
     # Register namespaces
     from .controllers.rulebook_controller import api as rulebook_ns
+    from .controllers.anomaly_controller import api as anomaly
     api.add_namespace(rulebook_ns)
-    
+    api.add_namespace(anomaly)   
     return app 
