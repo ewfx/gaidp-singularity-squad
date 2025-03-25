@@ -3,301 +3,401 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Regulatory Compliance Dashboard</title>
+    <title>Compliance Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
-    />
-    <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.2/dist/jsoneditor.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.2/dist/jsoneditor.min.js"></script>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8fafc;
+      }
+
       .sidebar {
-        transition: all 0.3s;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
       }
-      .sidebar:hover {
-        width: 250px;
+
+      .nav-link {
+        transition: all 0.3s ease;
       }
-      .sidebar:hover .sidebar-text {
-        display: inline-block;
+
+      .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
       }
-      .sidebar-text {
-        display: none;
-        transition: all 0.3s;
+
+      .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left: 4px solid #3b82f6;
       }
-      .content {
-        transition: all 0.3s;
+
+      .card {
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
       }
-      .sidebar:hover + .content {
-        margin-left: 250px;
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
-      .toast {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        border-radius: 8px;
-        color: white;
+
+      .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
         font-weight: 500;
-        transform: translateY(100px);
-        opacity: 0;
-        transition: all 0.3s ease-in-out;
-        z-index: 1000;
       }
-      .toast.show {
-        transform: translateY(0);
-        opacity: 1;
+
+      .status-badge.completed {
+        background-color: #dcfce7;
+        color: #166534;
       }
-      .toast.success {
-        background-color: #10b981;
+
+      .status-badge.processing {
+        background-color: #fef3c7;
+        color: #92400e;
       }
-      .toast.error {
-        background-color: #ef4444;
+
+      .status-badge.failed {
+        background-color: #fee2e2;
+        color: #991b1b;
       }
-      .loader {
-        border: 4px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 4px solid #3498db;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
+
+      .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        transition: all 0.3s ease;
       }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+      }
+
+      .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+          0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+
+      .table-header {
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .table-row {
+        transition: all 0.2s ease;
+      }
+
+      .table-row:hover {
+        background-color: #f8fafc;
+      }
+
+      .loading-overlay {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+      }
+
+      .toast {
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
         }
-        100% {
-          transform: rotate(360deg);
+        to {
+          transform: translateX(0);
+          opacity: 1;
         }
-      }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-      .modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 800px;
-        max-height: 80vh;
-        overflow-y: auto;
       }
     </style>
   </head>
-  <body class="bg-gray-100">
-    <!-- Toast Container -->
-    <div id="toast" class="toast"></div>
-
-    <!-- Loading Overlay -->
-    <div
-      id="loadingOverlay"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50"
-    >
-      <div class="flex items-center justify-center h-full">
-        <div class="bg-white p-8 rounded-lg shadow-xl">
-          <div class="flex flex-col items-center">
-            <div class="loader"></div>
-            <p class="text-center mt-4 text-gray-700">
-              Processing your document...
-            </p>
-            <div class="mt-4 w-64 bg-gray-200 rounded-full h-2.5">
-              <div class="bg-blue-600 h-2.5 rounded-full animate-pulse"></div>
+  <body class="bg-gray-50">
+    <div class="min-h-screen flex">
+      <!-- Sidebar -->
+      <div class="sidebar w-64 min-h-screen flex flex-col">
+        <div class="p-6">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-shield-alt text-white text-xl"></i>
             </div>
-            <p class="text-sm text-gray-500 mt-2">
-              This may take a few minutes
-            </p>
+            <span class="text-white text-xl font-semibold"
+              >Compliance Portal</span
+            >
+          </div>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-1">
+          <a
+            href="#"
+            class="nav-link active flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-home w-6"></i>
+            <span>Dashboard</span>
+          </a>
+          <a
+            href="#"
+            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-cog w-6"></i>
+            <span>Settings</span>
+          </a>
+          <a
+            href="#"
+            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-chart-bar w-6"></i>
+            <span>Analytics</span>
+          </a>
+          <a
+            href="#"
+            class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
+          >
+            <i class="fas fa-users w-6"></i>
+            <span>Team</span>
+          </a>
+        </nav>
+        <div class="p-4 border-t border-gray-700">
+          <div class="flex items-center space-x-3">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS31IIY-k8jbqZOMxsqqUY4VfN3vcNwM3iyKg&s"
+              class="w-8 h-8 bg-gray-700 rounded-full"
+            />
+            <div class="flex-1">
+              <p class="text-sm text-white font-medium">Ayush Addhyayan</p>
+              <p class="text-xs text-gray-400">Admin</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- JSON Viewer Modal -->
-    <div id="jsonModal" class="modal">
-      <div class="modal-content">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Rulebook Details</h2>
-          <button
-            onclick="closeJsonModal()"
-            class="text-gray-500 hover:text-gray-700"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div id="jsoneditor" style="height: 500px"></div>
-      </div>
-    </div>
-
-    <div class="flex h-screen">
-      <!-- Sidebar -->
-      <div
-        class="sidebar bg-gray-900 text-white w-20 fixed h-full flex flex-col items-center py-4"
-      >
-        <div class="mb-8">
-          <i class="fas fa-shield-alt text-3xl"></i>
-          <span class="sidebar-text ml-2">Compliance Hub</span>
-        </div>
-        <nav class="flex-1 w-full">
-          <a
-            href="#"
-            class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white"
-          >
-            <i class="fas fa-book w-6"></i>
-            <span class="sidebar-text">Rulebooks</span>
-          </a>
-          <a
-            href="#"
-            class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white"
-          >
-            <i class="fas fa-file-csv w-6"></i>
-            <span class="sidebar-text">Validation</span>
-          </a>
-          <a
-            href="#"
-            class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white"
-          >
-            <i class="fas fa-chart-bar w-6"></i>
-            <span class="sidebar-text">Analytics</span>
-          </a>
-          <a
-            href="#"
-            class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white"
-          >
-            <i class="fas fa-cog w-6"></i>
-            <span class="sidebar-text">Settings</span>
-          </a>
-        </nav>
-      </div>
 
       <!-- Main Content -->
-      <div class="content ml-20 flex-1 p-8">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-          <h1 class="text-2xl font-bold text-gray-800">Rulebook Management</h1>
-          <button
-            onclick="openUploadModal()"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
-          >
-            <i class="fas fa-plus mr-2"></i>
-            Upload New Rulebook
-          </button>
+      <div class="flex-1 overflow-hidden">
+        <!-- Top Bar -->
+        <div class="bg-white border-b border-gray-200">
+          <div class="px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+              <span
+                class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+              >
+                Development
+              </span>
+            </div>
+            <div class="flex items-center space-x-4">
+              <button class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-bell text-xl"></i>
+              </button>
+              <button class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-search text-xl"></i>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Rulebooks List -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <div class="overflow-x-auto">
-            <table class="min-w-full">
-              <thead>
-                <tr class="bg-gray-50">
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Name
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Description
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Status
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Created At
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                {% for rulebook in rulebooks %}
-                <tr class="hover:bg-gray-50 transition-colors duration-200">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 h-10 w-10">
-                        <div
-                          class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center"
-                        >
-                          <i class="fas fa-book text-blue-600"></i>
+        <!-- Main Content Area -->
+        <div class="p-6">
+          <!-- Stats Cards -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
+          >
+            <div class="card bg-white rounded-lg p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Total Rulebooks
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 mt-1">
+                    {{ rulebooks|length }}
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-book text-blue-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="card bg-white rounded-lg p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Active Rules</p>
+                  <p class="text-2xl font-bold text-gray-900 mt-1">
+                    {{ rulebooks|selectattr('status', 'equalto',
+                    'COMPLETED')|list|length }}
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="card bg-white rounded-lg p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Processing</p>
+                  <p class="text-2xl font-bold text-gray-900 mt-1">
+                    {{ rulebooks|selectattr('status', 'equalto',
+                    'PROCESSING')|list|length }}
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center"
+                >
+                  <i
+                    class="fas fa-spinner {% if rulebooks|selectattr('status', 'equalto', 'PROCESSING')|list|length > 0 %}fa-spin{% endif %} text-yellow-600 text-xl"
+                  ></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="card bg-white rounded-lg p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Failed</p>
+                  <p class="text-2xl font-bold text-gray-900 mt-1">
+                    {{ rulebooks|selectattr('status', 'equalto',
+                    'FAILED')|list|length }}
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rulebooks Table -->
+          <div class="table-container">
+            <div
+              class="px-6 py-4 flex items-center justify-between border-b border-gray-200"
+            >
+              <h2 class="text-lg font-semibold text-gray-900">Rulebooks</h2>
+              <button
+                onclick="showUploadModal()"
+                class="btn-primary px-4 py-2 text-white rounded-lg flex items-center space-x-2"
+              >
+                <i class="fas fa-plus"></i>
+                <span>Upload New Rulebook</span>
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="table-header">
+                  <tr>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Rulebook
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Description
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Created At
+                    </th>
+                    <th
+                      class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  {% for rulebook in rulebooks %}
+                  <tr class="table-row">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                          <div
+                            class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center"
+                          >
+                            <i class="fas fa-book text-blue-600"></i>
+                          </div>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">
+                            {{ rulebook.rulebook_name }}
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            {{ rulebook.original_filename }}
+                          </div>
                         </div>
                       </div>
-                      <div class="ml-4">
-                        <div class="text-sm font-medium text-gray-900">
-                          {{ rulebook.rulebook_name }}
-                        </div>
-                        <div class="text-sm text-gray-500">
-                          {{ rulebook.original_filename }}
-                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-gray-900">
+                        {{ rulebook.description }}
                       </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900">
-                      {{ rulebook.description }}
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">
-                      <span class="inline-flex items-center">
-                        <i class="fas fa-file-pdf text-red-500 mr-1"></i>
-                        {{ (rulebook.file_size / 1024 / 1024)|round(2) }} MB
+                      <div
+                        class="text-xs text-gray-500 mt-1 flex items-center space-x-4"
+                      >
+                        <span class="inline-flex items-center">
+                          <i class="fas fa-file-pdf text-red-500 mr-1"></i>
+                          {{ (rulebook.file_size / 1024 / 1024)|round(2) }} MB
+                        </span>
+                        <span class="inline-flex items-center">
+                          <i class="fas fa-list-check text-green-500 mr-1"></i>
+                          {{ rulebook.rules|length }} Rules
+                        </span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="status-badge {{ rulebook.status.lower() }}">
+                        {{ rulebook.status }}
                       </span>
-                      <span class="ml-2 inline-flex items-center">
-                        <i class="fas fa-list-check text-green-500 mr-1"></i>
-                        {{ rulebook.rules|length }} Rules
-                      </span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if rulebook.status == 'COMPLETED' %} bg-green-100 text-green-800 {% elif rulebook.status == 'PROCESSING' %} bg-yellow-100 text-yellow-800 {% elif rulebook.status == 'FAILED' %} bg-red-100 text-red-800 {% else %} bg-gray-100 text-gray-800 {% endif %}"
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
                     >
-                      {{ rulebook.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ rulebook.created_at }}
-                  </td>
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                  >
-                    <button
-                      onclick="viewRules('{{ rulebook.uuid }}')"
-                      class="text-blue-600 hover:text-blue-900 mr-3"
+                      {{ rulebook.created_at }}
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                     >
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button
-                      onclick="deleteRulebook('{{ rulebook.uuid }}')"
-                      class="text-red-600 hover:text-red-900"
-                    >
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+                      <button
+                        onclick="viewRules('{{ rulebook.uuid }}')"
+                        class="text-blue-600 hover:text-blue-900 mr-3"
+                        title="View Rules"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button
+                        onclick="deleteRulebook('{{ rulebook.uuid }}')"
+                        class="text-red-600 hover:text-red-900"
+                        title="Delete Rulebook"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -312,9 +412,17 @@
         class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
       >
         <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            Upload New Rulebook
-          </h3>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">
+              Upload New Rulebook
+            </h3>
+            <button
+              onclick="closeUploadModal()"
+              class="text-gray-400 hover:text-gray-500"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
           <form id="uploadForm" class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
@@ -323,9 +431,10 @@
               <input
                 type="text"
                 name="rulebook_name"
+                style="border-width: 2px"
                 required
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 placeholder="e.g., Basel III, MiFID II"
+                class="mt-1 block w-full rounded-md border-gray shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
               />
             </div>
             <div>
@@ -334,33 +443,27 @@
               >
               <div
                 class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md"
+                id="dropZone"
               >
-                <div class="space-y-1 text-center w-full">
-                  <div id="filePreview" class="hidden">
-                    <div
-                      class="flex items-center justify-center space-x-2 text-gray-600"
-                    >
-                      <i class="fas fa-file-pdf text-2xl text-red-500"></i>
-                      <span id="fileName" class="text-sm truncate"></span>
+                <div class="space-y-1 text-center">
+                  <div id="filePreview" class="hidden mb-3">
+                    <div class="flex items-center justify-center space-x-2">
+                      <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                      <span id="fileName" class="text-sm text-gray-600"></span>
                     </div>
-                    <button
-                      type="button"
-                      onclick="clearFile()"
-                      class="mt-2 text-sm text-red-600 hover:text-red-800"
-                    >
-                      <i class="fas fa-times mr-1"></i>Remove
-                    </button>
                   </div>
                   <div id="uploadPrompt">
-                    <i class="fas fa-file-pdf text-3xl text-gray-400"></i>
+                    <i
+                      class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-3"
+                    ></i>
                     <div class="flex text-sm text-gray-600">
                       <label
-                        for="file-upload"
+                        for="file"
                         class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                       >
                         <span>Upload a file</span>
                         <input
-                          id="file-upload"
+                          id="file"
                           name="file"
                           type="file"
                           class="sr-only"
@@ -379,13 +482,13 @@
               <button
                 type="button"
                 onclick="closeUploadModal()"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                class="btn-primary px-4 py-2 text-sm font-medium text-white rounded-md"
               >
                 Upload
               </button>
@@ -420,32 +523,110 @@
       </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div
+      id="loadingOverlay"
+      class="fixed inset-0 bg-white bg-opacity-75 hidden flex items-center justify-center z-50"
+    >
+      <div class="flex flex-col items-center">
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"
+        ></div>
+        <p class="mt-4 text-gray-600">Processing...</p>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 space-y-2"></div>
+
     <script>
       let jsonEditor = null;
 
       function showToast(message, type = "success") {
-        const toast = document.getElementById("toast");
-        toast.textContent = message;
-        toast.className = `toast ${type} show`;
+        const toast = document.getElementById("toastContainer");
+        const toastElement = document.createElement("div");
+        toastElement.className = `toast bg-white rounded-lg shadow-lg p-4 flex items-center space-x-3 ${
+          type === "success"
+            ? "border-l-4 border-green-500"
+            : "border-l-4 border-red-500"
+        }`;
+        toastElement.style.transition = "all 0.3s ease-in-out";
+
+        const icon = document.createElement("i");
+        icon.className = `fas ${
+          type === "success"
+            ? "fa-check-circle text-green-500"
+            : "fa-exclamation-circle text-red-500"
+        } text-xl`;
+
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "text-gray-700 flex-1";
+        messageDiv.textContent = message;
+
+        const closeButton = document.createElement("button");
+        closeButton.className = "text-gray-400 hover:text-gray-600";
+        closeButton.innerHTML = '<i class="fas fa-times"></i>';
+        closeButton.onclick = () => {
+          toastElement.style.opacity = "0";
+          toastElement.style.transform = "translateX(100%)";
+          setTimeout(() => {
+            toast.removeChild(toastElement);
+          }, 300);
+        };
+
+        toastElement.appendChild(icon);
+        toastElement.appendChild(messageDiv);
+        toastElement.appendChild(closeButton);
+        toast.appendChild(toastElement);
+
+        // Auto remove after 5 seconds
         setTimeout(() => {
-          toast.className = "toast";
+          if (toastElement.parentElement) {
+            toastElement.style.opacity = "0";
+            toastElement.style.transform = "translateX(100%)";
+            setTimeout(() => {
+              if (toastElement.parentElement) {
+                toast.removeChild(toastElement);
+              }
+            }, 300);
+          }
         }, 5000);
       }
 
       function showLoading() {
-        document.getElementById("loadingOverlay").classList.remove("hidden");
+        const overlay = document.getElementById("loadingOverlay");
+        overlay.classList.remove("hidden");
+        overlay.innerHTML = `
+          <div class="flex items-center justify-center h-full">
+            <div class="bg-white p-8 rounded-lg shadow-xl">
+              <div class="flex flex-col items-center">
+                <div class="loader"></div>
+                <p class="text-center mt-4 text-gray-700">Processing your document...</p>
+                <div class="mt-4 w-64 bg-gray-200 rounded-full h-2.5">
+                  <div class="bg-blue-600 h-2.5 rounded-full animate-pulse"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">This may take a few minutes</p>
+              </div>
+            </div>
+          </div>
+        `;
       }
 
       function hideLoading() {
         document.getElementById("loadingOverlay").classList.add("hidden");
       }
 
-      function openUploadModal() {
+      function showUploadModal() {
         document.getElementById("uploadModal").classList.remove("hidden");
       }
 
       function closeUploadModal() {
-        document.getElementById("uploadModal").classList.add("hidden");
+        const modal = document.getElementById("uploadModal");
+        modal.classList.add("hidden");
+        // Reset form when closing
+        const form = document.getElementById("uploadForm");
+        form.reset();
+        clearFile();
       }
 
       function openJsonModal() {
@@ -509,10 +690,11 @@
       }
 
       // File upload handling
-      const fileInput = document.getElementById("file-upload");
+      const fileInput = document.getElementById("file");
       const filePreview = document.getElementById("filePreview");
       const uploadPrompt = document.getElementById("uploadPrompt");
       const fileName = document.getElementById("fileName");
+      const dropZone = document.getElementById("dropZone");
 
       fileInput.addEventListener("change", handleFileSelect);
 
@@ -545,8 +727,48 @@
         uploadPrompt.classList.remove("hidden");
       }
 
+      // Form submission
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(this);
+          const submitButton = this.querySelector('button[type="submit"]');
+
+          try {
+            submitButton.disabled = true;
+            showLoading();
+
+            const response = await fetch("/rulebooks/upload-pdf", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              closeUploadModal();
+              showToast(
+                "Rulebook uploaded successfully and is being processed in the background",
+                "success"
+              );
+              // Wait for toast animation and then refresh
+              setTimeout(() => {
+                window.location.reload();
+              }, 3000);
+            } else {
+              hideLoading();
+              throw new Error(data.message || "Error uploading rulebook");
+            }
+          } catch (error) {
+            hideLoading();
+            showToast(error.message || "Error uploading rulebook", "error");
+            submitButton.disabled = false;
+          }
+        });
+
       // Drag and drop handling
-      const dropZone = document.querySelector(".border-dashed");
       ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
         dropZone.addEventListener(eventName, preventDefaults, false);
       });
@@ -565,11 +787,11 @@
       });
 
       function highlight(e) {
-        dropZone.classList.add("border-blue-500");
+        dropZone.classList.add("border-blue-500", "border-2");
       }
 
       function unhighlight(e) {
-        dropZone.classList.remove("border-blue-500");
+        dropZone.classList.remove("border-blue-500", "border-2");
       }
 
       dropZone.addEventListener("drop", handleDrop, false);
@@ -591,35 +813,6 @@
           updateFilePreview(file);
         }
       }
-
-      // Form submission
-      document
-        .getElementById("uploadForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          showLoading();
-          const formData = new FormData(this);
-
-          fetch("/rulebooks/upload-pdf", {
-            method: "POST",
-            body: formData,
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              hideLoading();
-              if (data.success) {
-                showToast(data.message);
-                closeUploadModal();
-                window.location.reload();
-              } else {
-                showToast("Error uploading rulebook", "error");
-              }
-            })
-            .catch((error) => {
-              hideLoading();
-              showToast("Error uploading rulebook", "error");
-            });
-        });
 
       function viewRules(uuid) {
         showLoading();
