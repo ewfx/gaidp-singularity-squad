@@ -1,5 +1,0 @@
-flask==2.3.3
-flask-restx==1.1.0
-python-dotenv==1.0.0
-werkzeug==2.3.7
-python-magic==0.4.27 
