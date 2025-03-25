@@ -87,6 +87,6 @@ class TransactionAssess(Resource):
             # Create rulebook
             anomalies=anomaly_service.predict_anomalies(file)
             
-            return anomalies.to_string()
+            return json.dumps(anomalies)
         except Exception as e:
             api.abort(500, f"Error detecting anomalies: {str(e)}")
