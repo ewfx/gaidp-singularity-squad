@@ -1,0 +1,11 @@
+flask==2.3.3
+flask-restx==1.1.0
+python-dotenv==1.0.0
+werkzeug==2.3.7
+python-magic==0.4.27
+langchain==0.1.12
+google-generativeai>=0.4.1,<0.5.0
+pandas==2.2.1
+pydantic==2.6.3
+langchain-google-genai==0.0.11
+pdfplumber==0.10.3 

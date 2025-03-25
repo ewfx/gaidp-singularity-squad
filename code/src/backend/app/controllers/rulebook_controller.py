@@ -3,6 +3,7 @@ from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from ..services.rulebook_service import RulebookService
 from ..utils.file_handler import is_pdf
+import asyncio
 
 # Create namespace with better description
 api = Namespace(
@@ -12,21 +13,33 @@ api = Namespace(
 )
 
 # Define detailed response models with examples
+rule_model = api.model('Rule', {
+    'rule_id': fields.String(required=True, description='Unique identifier for the rule'),
+    'description': fields.String(required=True, description='Description of the rule'),
+    'condition': fields.String(required=True, description='Condition that must be met'),
+    'severity': fields.String(required=True, description='Severity level (HIGH, MEDIUM, LOW)'),
+    'category': fields.String(required=True, description='Category of the rule'),
+    'created_at': fields.DateTime(required=True, description='When the rule was created')
+})
+
 rulebook_model = api.model('Rulebook', {
-    'uuid': fields.String(required=True, description='Unique identifier for the rulebook', example='550e8400-e29b-41d4-a716-446655440000'),
-    'rulebook_name': fields.String(required=True, description='Name of the regulatory rulebook', example='Basel III'),
-    'description': fields.String(required=True, description='Detailed description of the rulebook', example='Basel III regulatory framework for banking supervision'),
-    'file_path': fields.String(required=True, description='Local path to the stored PDF file', example='/rulebooks/550e8400-e29b-41d4-a716-446655440000/basel_iii.pdf'),
-    'created_at': fields.DateTime(required=True, description='Timestamp when the rulebook was uploaded', example='2024-03-25T10:30:00Z'),
-    'file_size': fields.Integer(required=True, description='Size of the PDF file in bytes', example=1048576),
-    'original_filename': fields.String(required=True, description='Original name of the uploaded file', example='basel_iii.pdf')
+    'uuid': fields.String(required=True, description='Unique identifier for the rulebook'),
+    'rulebook_name': fields.String(required=True, description='Name of the regulatory rulebook'),
+    'description': fields.String(required=True, description='Detailed description of the rulebook'),
+    'file_path': fields.String(required=True, description='Local path to the stored PDF file'),
+    'created_at': fields.DateTime(required=True, description='Timestamp when the rulebook was uploaded'),
+    'file_size': fields.Integer(required=True, description='Size of the PDF file in bytes'),
+    'original_filename': fields.String(required=True, description='Original name of the uploaded file'),
+    'rules': fields.List(fields.Nested(rule_model), description='Generated rules from the PDF'),
+    'status': fields.String(required=True, description='Processing status (PENDING, PROCESSING, COMPLETED, FAILED)'),
+    'processing_error': fields.String(description='Error message if processing failed')
 })
 
 # Define error response model with examples
 error_model = api.model('Error', {
-    'message': fields.String(required=True, description='Error message', example='File must be a PDF'),
-    'code': fields.String(required=True, description='Error code', example='INVALID_FILE_TYPE'),
-    'details': fields.Raw(description='Additional error details', example={'allowed_types': ['pdf']})
+    'message': fields.String(required=True, description='Error message'),
+    'code': fields.String(required=True, description='Error code'),
+    'details': fields.Raw(description='Additional error details')
 })
 
 # Define upload parser with simplified requirements
@@ -46,6 +59,16 @@ upload_parser.add_argument(
     help='Name of the regulatory rulebook (e.g., "Basel III", "MiFID II")'
 )
 
+# Define transaction validation parser
+validation_parser = api.parser()
+validation_parser.add_argument(
+    'csv_file',
+    location='files',
+    type=FileStorage,
+    required=True,
+    help='CSV file containing transactions to validate'
+)
+
 @api.route('/upload-pdf')
 class RulebookUpload(Resource):
     @api.expect(upload_parser)
@@ -60,26 +83,6 @@ class RulebookUpload(Resource):
             400: 'Invalid file format or missing required fields',
             413: 'File size exceeds maximum limit of 10MB',
             500: 'Internal server error during processing'
-        },
-        examples={
-            'success': {
-                'value': {
-                    'uuid': '550e8400-e29b-41d4-a716-446655440000',
-                    'rulebook_name': 'Basel III',
-                    'description': 'Basel III regulatory framework for banking supervision',
-                    'file_path': '/rulebooks/550e8400-e29b-41d4-a716-446655440000/basel_iii.pdf',
-                    'created_at': '2024-03-25T10:30:00Z',
-                    'file_size': 1048576,
-                    'original_filename': 'basel_iii.pdf'
-                }
-            },
-            'error': {
-                'value': {
-                    'message': 'File must be a PDF',
-                    'code': 'INVALID_FILE_TYPE',
-                    'details': {'allowed_types': ['pdf']}
-                }
-            }
         }
     )
     def post(self):
@@ -90,18 +93,13 @@ class RulebookUpload(Resource):
         - Generate a unique UUID
         - Create a description based on the rulebook name
         - Store the file securely
+        - Extract text from the PDF
+        - Generate rules using LangChain and Gemini
         - Track metadata like file size and creation time
         
         The uploaded file must be:
         - A valid PDF file
         - Less than 10MB in size
-        
-        Example request:
-        ```
-        curl -X POST http://localhost:5000/rulebooks/upload-pdf \
-          -F "file=@basel_iii.pdf" \
-          -F "rulebook_name=Basel III"
-        ```
         """
         args = upload_parser.parse_args()
         file = args['file']
@@ -117,17 +115,19 @@ class RulebookUpload(Resource):
             # Generate a description based on the rulebook name
             description = f"Regulatory framework for {rulebook_name}"
             
-            metadata = RulebookService.create_rulebook(
+            # Create rulebook and generate rules
+            service = RulebookService()
+            metadata = asyncio.run(service.create_rulebook(
                 file,
                 rulebook_name,
                 description
-            )
+            ))
             return metadata, 201
         except Exception as e:
             api.abort(500, f"Error creating rulebook: {str(e)}")
 
 @api.route('/rulebook/<string:uuid>')
-@api.param('uuid', 'The unique identifier of the rulebook', example='550e8400-e29b-41d4-a716-446655440000')
+@api.param('uuid', 'The unique identifier of the rulebook')
 class RulebookResource(Resource):
     @api.response(200, 'Success', rulebook_model)
     @api.response(404, 'Rulebook not found', error_model)
@@ -136,41 +136,13 @@ class RulebookResource(Resource):
         responses={
             200: 'Rulebook metadata retrieved successfully',
             404: 'Rulebook with specified UUID not found'
-        },
-        examples={
-            'success': {
-                'value': {
-                    'uuid': '550e8400-e29b-41d4-a716-446655440000',
-                    'rulebook_name': 'Basel III',
-                    'description': 'Basel III regulatory framework for banking supervision',
-                    'file_path': '/rulebooks/550e8400-e29b-41d4-a716-446655440000/basel_iii.pdf',
-                    'created_at': '2024-03-25T10:30:00Z',
-                    'file_size': 1048576,
-                    'original_filename': 'basel_iii.pdf'
-                }
-            },
-            'error': {
-                'value': {
-                    'message': 'Rulebook not found',
-                    'code': 'NOT_FOUND',
-                    'details': {'uuid': '550e8400-e29b-41d4-a716-446655440000'}
-                }
-            }
         }
     )
     @api.marshal_with(rulebook_model)
     def get(self, uuid):
-        """Get rulebook metadata by UUID
-        
-        Retrieves the complete metadata for a specific rulebook using its unique identifier.
-        This includes information such as name, description, file details, and creation timestamp.
-        
-        Example request:
-        ```
-        curl -X GET http://localhost:5000/rulebooks/rulebook/550e8400-e29b-41d4-a716-446655440000
-        ```
-        """
-        rulebook = RulebookService.get_rulebook(uuid)
+        """Get rulebook metadata by UUID"""
+        service = RulebookService()
+        rulebook = service.get_rulebook(uuid)
         if not rulebook:
             api.abort(404, "Rulebook not found")
         return rulebook
@@ -182,42 +154,51 @@ class RulebookList(Resource):
         description='List all uploaded rulebooks',
         responses={
             200: 'List of all rulebooks retrieved successfully'
-        },
-        examples={
-            'success': {
-                'value': [
-                    {
-                        'uuid': '550e8400-e29b-41d4-a716-446655440000',
-                        'rulebook_name': 'Basel III',
-                        'description': 'Basel III regulatory framework for banking supervision',
-                        'file_path': '/rulebooks/550e8400-e29b-41d4-a716-446655440000/basel_iii.pdf',
-                        'created_at': '2024-03-25T10:30:00Z',
-                        'file_size': 1048576,
-                        'original_filename': 'basel_iii.pdf'
-                    },
-                    {
-                        'uuid': '550e8400-e29b-41d4-a716-446655440001',
-                        'rulebook_name': 'MiFID II',
-                        'description': 'Markets in Financial Instruments Directive II',
-                        'file_path': '/rulebooks/550e8400-e29b-41d4-a716-446655440001/mifid_ii.pdf',
-                        'created_at': '2024-03-25T11:30:00Z',
-                        'file_size': 2097152,
-                        'original_filename': 'mifid_ii.pdf'
-                    }
-                ]
-            }
         }
     )
     @api.marshal_list_with(rulebook_model)
     def get(self):
-        """List all uploaded rulebooks
+        """List all uploaded rulebooks"""
+        service = RulebookService()
+        return service.get_all_rulebooks()
+
+@api.route('/rulebook/<string:uuid>/validate')
+@api.param('uuid', 'The unique identifier of the rulebook')
+class TransactionValidation(Resource):
+    @api.expect(validation_parser)
+    @api.response(200, 'Validation completed successfully')
+    @api.response(400, 'Invalid input', error_model)
+    @api.response(404, 'Rulebook not found', error_model)
+    @api.doc(
+        description='Validate transactions from CSV against a rulebook',
+        responses={
+            200: 'Validation completed successfully',
+            400: 'Invalid CSV file or rulebook not ready',
+            404: 'Rulebook not found'
+        }
+    )
+    def post(self, uuid):
+        """Validate transactions from CSV against a rulebook
         
-        Returns a comprehensive list of all rulebooks that have been uploaded to the system,
-        including their metadata and basic information.
+        This endpoint accepts a CSV file containing transactions and validates them
+        against the rules generated from the specified rulebook.
         
-        Example request:
-        ```
-        curl -X GET http://localhost:5000/rulebooks/rulebooks
-        ```
+        The CSV file must contain columns that match the rule conditions.
         """
-        return RulebookService.get_all_rulebooks() 
+        args = validation_parser.parse_args()
+        csv_file = args['csv_file']
+        
+        if not csv_file:
+            api.abort(400, "No CSV file provided")
+        
+        try:
+            service = RulebookService()
+            violations = service.validate_transactions(csv_file, uuid)
+            return {
+                'total_transactions': len(violations),
+                'violations': violations
+            }
+        except ValueError as e:
+            api.abort(400, str(e))
+        except Exception as e:
+            api.abort(500, f"Error validating transactions: {str(e)}") 
