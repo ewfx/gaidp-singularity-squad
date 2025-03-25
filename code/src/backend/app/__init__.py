@@ -50,7 +50,9 @@ def create_app():
     
     # Register namespaces
     from .controllers.rulebook_controller import api as rulebook_ns
+    from .controllers.dashboard_controller import dashboard_bp
     api.add_namespace(rulebook_ns)
+    app.register_blueprint(dashboard_bp)
     
     # Initialize API with app
     api.init_app(app)
