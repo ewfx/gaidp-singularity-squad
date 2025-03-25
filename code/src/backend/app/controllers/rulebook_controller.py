@@ -4,6 +4,17 @@ from werkzeug.datastructures import FileStorage
 from ..services.rulebook_service import RulebookService
 from ..utils.file_handler import is_pdf
 import asyncio
+import os
+import uuid
+from datetime import datetime
+import json
+
+# Create a custom JSON encoder
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return super().default(obj)
 
 # Create namespace with better description
 api = Namespace(
@@ -69,6 +80,9 @@ validation_parser.add_argument(
     help='CSV file containing transactions to validate'
 )
 
+# Initialize service
+rulebook_service = RulebookService()
+
 @api.route('/upload-pdf')
 class RulebookUpload(Resource):
     @api.expect(upload_parser)
@@ -115,14 +129,18 @@ class RulebookUpload(Resource):
             # Generate a description based on the rulebook name
             description = f"Regulatory framework for {rulebook_name}"
             
-            # Create rulebook and generate rules
-            service = RulebookService()
-            metadata = asyncio.run(service.create_rulebook(
-                file,
-                rulebook_name,
-                description
-            ))
-            return metadata, 201
+            # Create rulebook
+            rulebook = asyncio.run(rulebook_service.create_rulebook(file, rulebook_name, description))
+            
+            # Convert to dict and handle datetime serialization
+            rulebook_dict = rulebook
+            if isinstance(rulebook_dict['created_at'], datetime):
+                rulebook_dict['created_at'] = rulebook_dict['created_at'].isoformat()
+            for rule in rulebook_dict.get('rules', []):
+                if 'created_at' in rule and isinstance(rule['created_at'], datetime):
+                    rule['created_at'] = rule['created_at'].isoformat()
+            
+            return rulebook_dict, 201
         except Exception as e:
             api.abort(500, f"Error creating rulebook: {str(e)}")
 
@@ -141,11 +159,18 @@ class RulebookResource(Resource):
     @api.marshal_with(rulebook_model)
     def get(self, uuid):
         """Get rulebook metadata by UUID"""
-        service = RulebookService()
-        rulebook = service.get_rulebook(uuid)
+        rulebook = rulebook_service.get_rulebook(uuid)
         if not rulebook:
             api.abort(404, "Rulebook not found")
-        return rulebook
+        
+        # Convert to dict and handle datetime serialization
+        rulebook_dict = rulebook
+        rulebook_dict['created_at'] = rulebook_dict['created_at'].isoformat()
+        for rule in rulebook_dict.get('rules', []):
+            if 'created_at' in rule:
+                rule['created_at'] = rule['created_at'].isoformat()
+        
+        return rulebook_dict
 
 @api.route('/rulebooks')
 class RulebookList(Resource):
@@ -159,8 +184,11 @@ class RulebookList(Resource):
     @api.marshal_list_with(rulebook_model)
     def get(self):
         """List all uploaded rulebooks"""
-        service = RulebookService()
-        return service.get_all_rulebooks()
+        try:
+            rulebooks = rulebook_service.get_all_rulebooks()
+            return rulebooks
+        except Exception as e:
+            api.abort(500, message=str(e))
 
 @api.route('/rulebook/<string:uuid>/validate')
 @api.param('uuid', 'The unique identifier of the rulebook')
@@ -192,8 +220,7 @@ class TransactionValidation(Resource):
             api.abort(400, "No CSV file provided")
         
         try:
-            service = RulebookService()
-            violations = service.validate_transactions(csv_file, uuid)
+            violations = rulebook_service.validate_transactions(csv_file, uuid)
             return {
                 'total_transactions': len(violations),
                 'violations': violations

@@ -135,13 +135,10 @@ class RulebookService:
             with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, default=str)
             
-            # Extract text from PDF and generate rules
+            # Generate rules from the PDF
             try:
-                # Extract text locally using pdfplumber
-                pdf_text = self._extract_text_from_pdf(file_path)
-                
-                # Generate rules from the extracted text
-                rules = await self.rule_generator.generate_rules(pdf_text)
+                # Generate rules directly from the PDF file
+                rules = await self.rule_generator.generate_rules(file_path)
                 
                 # Update metadata with rules and status
                 metadata['rules'] = [rule.dict() for rule in rules]

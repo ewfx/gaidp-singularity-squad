@@ -7,76 +7,116 @@ from ..models.rulebook import Rule, Rulebook
 from ..config import Config
 import asyncio
 import json
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
+import re
+import io
+import httpx
 
 class RuleGeneratorService:
     def __init__(self):
         # Configure Google API
         genai.configure(api_key=Config.GOOGLE_API_KEY)
-        
-        # Initialize Gemini with LangChain
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
-            google_api_key=Config.GOOGLE_API_KEY,
-            temperature=0.1,
-            convert_system_message_to_human=True,
-            max_output_tokens=2048
-        )
-        
-        # Define the output parser
-        self.parser = PydanticOutputParser(pydantic_object=Rulebook)
-        
-        # Define the system prompt
-        self.system_prompt = """You are a regulatory compliance expert. Analyze the provided regulatory document and extract key rules and requirements.
-        For each rule, provide:
-        1. A clear description of the rule
-        2. The specific condition that must be met
-        3. The severity level (HIGH, MEDIUM, LOW)
-        4. The category of the rule (e.g., Capital Requirements, Risk Management, Reporting)
-        
-        Format the rules in a structured way that can be used for automated validation.
-        Return the rules in JSON format with the following structure:
-        {
-            "rules": [
-                {
-                    "rule_id": "unique_id",
-                    "description": "rule description",
-                    "condition": "condition to check",
-                    "severity": "HIGH/MEDIUM/LOW",
-                    "category": "rule category"
-                }
-            ]
-        }"""
 
-        # Create the prompt template with proper variable handling
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", self.system_prompt),
-            ("human", "{input_text}")
-        ])
-
-    async def generate_rules(self, pdf_text: str) -> List[Rule]:
-        """Generate rules from PDF text using Gemini"""
+    async def generate_rules(self, pdf_path: str) -> List[Rule]:
+        """Generate rules from PDF using Gemini"""
         try:
-            # Create the chain
-            chain = self.prompt | self.llm | self.parser
+            # Read the PDF file
+            with open(pdf_path, 'rb') as f:
+                pdf_content = f.read()
             
-            # Generate rules with increased timeout
-            result = await chain.ainvoke(
-                {"input_text": pdf_text},  # Changed from 'text' to 'input_text' to match template
-                config={
-                    "run_name": "Generate Rules",
-                    "request_options": {"timeout": 600}  # 10 minutes timeout
-                }
+            # Create a file-like object
+            pdf_io = io.BytesIO(pdf_content)
+            
+            # Define the prompt
+            prompt = """Analyze this regulatory document and extract rules in the following JSON format:
+{
+    "rules": [
+        {
+            "rule_id": "unique_id",
+            "description": "rule description",
+            "condition": "condition to check",
+            "severity": "HIGH/MEDIUM/LOW",
+            "category": "rule category"
+        }
+    ]
+}
+
+Guidelines:
+1. Each rule must have a unique rule_id
+2. Description should be clear and concise
+3. Condition should be specific and testable
+4. Severity must be one of: HIGH, MEDIUM, LOW
+5. Category should reflect the regulatory domain (e.g., Capital Requirements, Risk Management, Reporting)
+
+Return ONLY the JSON structure, nothing else."""
+
+            # Generate content
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(
+                contents=[
+                    {
+                        "mime_type": "application/pdf",
+                        "data": pdf_content
+                    },
+                    prompt
+                ],
+                generation_config=genai.GenerationConfig(
+                    temperature=0.1,
+                    max_output_tokens=2048
+                ),
+                request_options={"timeout": 600}  # Set timeout to 10 minutes
             )
             
-            # Add timestamps to rules
-            for rule in result.rules:
-                rule.created_at = datetime.utcnow()
+            # Debug: Print the raw response
+            print("Raw LLM Response:")
+            print(response.text)
             
-            return result.rules
+            # Extract JSON from markdown code block using regex
+            json_regex = r"```json\s*(\{[\s\S]*?\})\s*```"
+            match = re.search(json_regex, response.text)
+            
+            if not match:
+                print("No JSON found in response. Full response:")
+                print(response.text)
+                raise Exception("No valid JSON structure found in the response")
+            
+            # Debug: Print the extracted JSON
+            print("\nExtracted JSON:")
+            print(match.group(1))
+            
+            # Parse the extracted JSON
+            try:
+                rules_data = json.loads(match.group(1))
+            except json.JSONDecodeError as e:
+                print(f"\nJSON Parse Error: {str(e)}")
+                print("Failed JSON content:")
+                print(match.group(1))
+                raise Exception(f"Failed to parse JSON from response: {str(e)}")
+            
+            # Convert to Rule objects
+            rules = []
+            for rule_data in rules_data.get('rules', []):
+                try:
+                    rule = Rule(
+                        rule_id=rule_data['rule_id'],
+                        description=rule_data['description'],
+                        condition=rule_data['condition'],
+                        severity=rule_data['severity'],
+                        category=rule_data['category'],
+                        created_at=datetime.utcnow().isoformat()  # Convert to ISO format string
+                    )
+                    rules.append(rule)
+                except KeyError as e:
+                    print(f"Warning: Missing required field in rule data: {str(e)}")
+                    print("Rule data:", rule_data)
+                    continue
+            
+            if not rules:
+                raise Exception("No valid rules were generated from the text")
+            
+            return rules
+            
         except Exception as e:
+            print(f"\nError in generate_rules: {str(e)}")
             raise Exception(f"Error generating rules: {str(e)}")
 
     def validate_transaction(self, transaction: dict, rules: List[Rule]) -> List[Rule]:
