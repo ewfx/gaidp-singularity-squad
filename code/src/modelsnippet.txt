@@ -1,0 +1,45 @@
+# prompt: Give me code so that I can import this model and run it on input CSV file 
+
+import pandas as pd
+import numpy as np
+import pickle
+
+# Load the trained Isolation Forest model
+with open('iso_model.pkl', 'rb') as f:
+    iso_model = pickle.load(f)
+
+def predict_anomalies(csv_file_path):
+    """
+    Predicts anomalies in a CSV file using the loaded Isolation Forest model.
+
+    Args:
+        csv_file_path: Path to the CSV file containing transaction data.
+
+    Returns:
+        A DataFrame with the original data and an 'anomaly_label' column
+        indicating whether each record is an anomaly (1) or not (0).
+    """
+
+    df = pd.read_csv(csv_file_path)
+    numeric_features = df.select_dtypes(include=[np.number]).columns
+    df_model = df[numeric_features].dropna().copy()
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    X = scaler.fit_transform(df_model)
+
+    iso_pred = np.where(iso_model.predict(X) == -1, 1, 0)
+    iso_anomaly_pct = iso_pred.mean() * 100
+    
+    df['anomaly_label'] = 0  # Default to non-anomalous
+
+    # Update only the rows that were used in prediction
+    df.loc[df_model.index, 'anomaly_label'] = iso_pred
+    
+    print("Anomaly Detection Summary:")
+    print(f"IsolationForest flagged {iso_anomaly_pct:.2f}% of records as anomalies.")
+    return df
+
+if __name__ == '__main__':
+    input_csv_file = 'your_input_csv_file.csv'  # Replace with your input CSV file path
+    df_with_predictions = predict_anomalies('corporate_loan_transactions_10000_top50_norisk.csv')
+df_with_predictions
