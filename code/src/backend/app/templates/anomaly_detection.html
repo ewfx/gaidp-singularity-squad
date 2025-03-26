@@ -244,8 +244,7 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
+        background-color: rgba(0,0,0,0.5);
       }
 
       .modal-content {
@@ -429,6 +428,7 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
+        table-layout: fixed;
       }
 
       .data-table th,
@@ -436,12 +436,18 @@
         padding: 12px 15px;
         text-align: left;
         border-bottom: 1px solid #eee;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .data-table th {
         background-color: #f8f9fa;
         font-weight: 600;
         color: #495057;
+        position: sticky;
+        top: 0;
+        z-index: 1;
       }
 
       .data-table tr:hover {
@@ -453,6 +459,9 @@
         border-radius: 4px;
         font-size: 12px;
         font-weight: 500;
+        display: inline-block;
+        text-align: center;
+        min-width: 80px;
       }
 
       .status-normal {
@@ -465,83 +474,195 @@
         color: #c62828;
       }
 
-      /* Modal styles */
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-      }
-
-      .modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 800px;
-        position: relative;
-      }
-
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-      }
-
-      .modal-header h2 {
-        margin: 0;
-        color: #333;
-      }
-
-      .close {
-        color: #aaa;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-
-      .close:hover {
-        color: #333;
-      }
-
-      .modal-body {
-        max-height: 70vh;
-        overflow-y: auto;
-      }
-
-      .transaction-detail {
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 4px;
-      }
-
-      .transaction-detail label {
-        font-weight: 600;
-        color: #495057;
-        margin-right: 10px;
-      }
-
       .view-details-btn {
-        background-color: #007bff;
+        background-color: #3b82f6;
         color: white;
         border: none;
-        padding: 4px 8px;
+        padding: 6px 12px;
         border-radius: 4px;
         cursor: pointer;
         font-size: 12px;
+        transition: background-color 0.2s;
       }
 
       .view-details-btn:hover {
-        background-color: #0056b3;
+        background-color: #2563eb;
+      }
+
+      /* DataTable specific styles */
+      .dataTables_wrapper {
+        width: 100%;
+      }
+
+      .dataTables_length,
+      .dataTables_filter {
+        margin-bottom: 1rem;
+      }
+
+      .dataTables_info,
+      .dataTables_paginate {
+        margin-top: 1rem;
+      }
+
+      .dataTables_paginate .paginate_button {
+        padding: 6px 12px;
+        margin: 0 2px;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #4b5563;
+      }
+
+      .dataTables_paginate .paginate_button.current {
+        background: #3b82f6 !important;
+        color: white !important;
+        border-color: #3b82f6;
+      }
+
+      .dataTables_paginate .paginate_button:hover {
+        background: #f3f4f6;
+        border-color: #e2e8f0;
+      }
+
+      .dataTables_filter input {
+        padding: 6px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        width: 200px;
+      }
+
+      .dataTables_length select {
+        padding: 6px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        margin: 0 8px;
+      }
+
+      /* Column widths */
+      .data-table th:nth-child(1),
+      .data-table td:nth-child(1) { width: 12%; } /* Customer ID */
+      .data-table th:nth-child(2),
+      .data-table td:nth-child(2) { width: 12%; } /* Internal ID */
+      .data-table th:nth-child(3),
+      .data-table td:nth-child(3) { width: 20%; } /* Obligor Name */
+      .data-table th:nth-child(4),
+      .data-table td:nth-child(4) { width: 12%; } /* Credit Facility Type */
+      .data-table th:nth-child(5),
+      .data-table td:nth-child(5) { width: 12%; } /* Amount */
+      .data-table th:nth-child(6),
+      .data-table td:nth-child(6) { width: 8%; } /* Country */
+      .data-table th:nth-child(7),
+      .data-table td:nth-child(7) { width: 8%; } /* Risk Rating */
+      .data-table th:nth-child(8),
+      .data-table td:nth-child(8) { width: 8%; } /* Status */
+      .data-table th:nth-child(9),
+      .data-table td:nth-child(9) { width: 8%; } /* Actions */
+
+      /* Responsive adjustments */
+      @media (max-width: 1024px) {
+        .data-table th,
+        .data-table td {
+          padding: 8px 12px;
+          font-size: 13px;
+        }
+        
+        .data-table .status-badge {
+          padding: 3px 6px;
+          font-size: 11px;
+          min-width: 70px;
+        }
+        
+        .view-details-btn {
+          padding: 4px 8px;
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .data-table-container {
+          margin-top: 10px;
+        }
+        
+        .dataTables_filter input {
+          width: 150px;
+        }
+        
+        .dataTables_length select {
+          padding: 4px 8px;
+        }
+      }
+
+      #chartModal .modal-content {
+        max-width: none;
+        max-height: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        z-index: 1100;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+      }
+
+      #chartModal .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      #chartModal .modal-body {
+        height: calc(100vh - 4rem);
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #expandedChart {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      #chartModal .close {
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      #chartModal .close:hover {
+        background-color: #f3f4f6;
+      }
+
+      .view-icon-btn {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        padding: 8px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .view-icon-btn:hover {
+        background-color: #eff6ff;
+        color: #2563eb;
+        transform: scale(1.1);
+      }
+
+      .view-icon-btn i {
+        font-size: 16px;
       }
     </style>
   </head>
@@ -830,12 +951,13 @@
               <table id="anomalyTable" class="data-table">
                 <thead>
                   <tr>
-                    <th>Record ID</th>
-                    <th>Timestamp</th>
-                    <th>Transaction Type</th>
-                    <th>Amount</th>
-                    <th>Region</th>
-                    <th>Risk Score</th>
+                    <th>Customer ID</th>
+                    <th>Internal ID</th>
+                    <th>Obligor Name</th>
+                    <th>Credit Facility Type</th>
+                    <th>Amount (INR)</th>
+                    <th>Country</th>
+                    <th>Risk Rating</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -857,6 +979,19 @@
         </div>
         <div class="modal-body">
           <div id="transactionDetails"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add this new modal for expanded charts -->
+    <div id="chartModal" class="modal">
+      <div class="modal-content" style="width: 100%; height: 100%; margin: 0; padding: 0; border-radius: 0;">
+        <div class="modal-header" style="padding: 1rem 2rem; background: white; border-bottom: 1px solid #e5e7eb;">
+          <h2 id="expandedChartTitle" class="text-xl font-semibold text-gray-900"></h2>
+          <span class="close" onclick="closeChartModal()" style="font-size: 1.5rem; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body" style="height: calc(100% - 4rem); padding: 0;">
+          <div id="expandedChart" style="width: 100%; height: 100%;"></div>
         </div>
       </div>
     </div>
@@ -1256,8 +1391,13 @@
                     font: { size: 14, color: "#1f2937" },
                     showarrow: false,
                     text: "Credit Facility Types",
-                    x: 0.5,
+                    x: -0.2,
                     y: 0.5,
+                    yref: 'paper',
+                    xref: 'paper',
+                    textangle: -90,
+                    align: 'center',
+                    valign: 'middle'
                 },
             ],
             plot_bgcolor: "#ffffff",
@@ -1350,11 +1490,39 @@
             }],
         };
 
-        // Plot all charts
-        Plotly.newPlot("timeSeriesPlot", timeSeriesData, timeSeriesLayout, config);
-        Plotly.newPlot("patternPlot", patternData, patternLayout, config);
-        Plotly.newPlot("regionalPlot", regionalPlotData, regionalLayout, config);
-        Plotly.newPlot("transactionTypePlot", transactionTypePlotData, transactionTypeLayout, config);
+        // Add expand buttons to each chart container
+        const chartContainers = document.querySelectorAll('.chart-container');
+        chartContainers.forEach(container => {
+          const chartId = container.id;
+          const title = container.previousElementSibling.textContent;
+          
+          // Add expand button
+          const expandButton = document.createElement('button');
+          expandButton.className = 'absolute top-2 right-2 p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+          expandButton.innerHTML = '<i class="fas fa-expand"></i>';
+          expandButton.onclick = () => expandChart(chartId, title);
+          container.style.position = 'relative';
+          container.appendChild(expandButton);
+        });
+
+        // Plot all charts with data attributes
+        const timeSeriesPlot = Plotly.newPlot("timeSeriesPlot", timeSeriesData, timeSeriesLayout, config);
+        const patternPlot = Plotly.newPlot("patternPlot", patternData, patternLayout, config);
+        const regionalPlot = Plotly.newPlot("regionalPlot", regionalPlotData, regionalLayout, config);
+        const transactionTypePlot = Plotly.newPlot("transactionTypePlot", transactionTypePlotData, transactionTypeLayout, config);
+
+        // Store plot data for expansion
+        document.getElementById('timeSeriesPlot').setAttribute('data-plotly', JSON.stringify(timeSeriesData));
+        document.getElementById('timeSeriesPlot').setAttribute('data-layout', JSON.stringify(timeSeriesLayout));
+        
+        document.getElementById('patternPlot').setAttribute('data-plotly', JSON.stringify(patternData));
+        document.getElementById('patternPlot').setAttribute('data-layout', JSON.stringify(patternLayout));
+        
+        document.getElementById('regionalPlot').setAttribute('data-plotly', JSON.stringify(regionalPlotData));
+        document.getElementById('regionalPlot').setAttribute('data-layout', JSON.stringify(regionalLayout));
+        
+        document.getElementById('transactionTypePlot').setAttribute('data-plotly', JSON.stringify(transactionTypePlotData));
+        document.getElementById('transactionTypePlot').setAttribute('data-layout', JSON.stringify(transactionTypeLayout));
       }
 
       function updateDataTable(data) {
@@ -1362,15 +1530,16 @@
         
         data.forEach(anomaly => {
           anomalyTable.row.add([
+            anomaly.customer_id || '-',
             anomaly.internal_id || '-',
-            anomaly.origination_date || '-',
+            anomaly.obligor_name || '-',
             anomaly.credit_facility_type || '-',
-            anomaly.amount || '-',
+            anomaly.utilized_exposure_global || '-',
             anomaly.country || '-',
-            anomaly.risk_score || '-',
+            anomaly.obligor_internal_risk_rating || '-',
             anomaly.anomaly_label === 1 ? 'Anomaly' : 'Normal',
-            `<button class="view-details-btn" onclick="showTransactionDetails(${JSON.stringify(anomaly).replace(/"/g, '&quot;')})">
-              View Details
+            `<button class="view-icon-btn" onclick="showTransactionDetails(${JSON.stringify(anomaly).replace(/"/g, '&quot;')})" title="View Details">
+              <i class="fas fa-eye"></i>
             </button>`
           ]);
         });
@@ -1399,15 +1568,26 @@
         
         // Group fields by category
         const categories = {
-          'Basic Information': ['internal_id', 'origination_date', 'credit_facility_type', 'amount'],
-          'Location Details': ['country', 'region', 'city'],
-          'Transaction Details': ['transaction_id', 'transaction_type', 'transaction_date'],
-          'Risk Assessment': ['risk_score', 'anomaly_label', 'confidence_score'],
-          'Additional Information': Object.keys(transaction).filter(key => 
-            !['internal_id', 'origination_date', 'credit_facility_type', 'amount', 
-              'country', 'region', 'city', 'transaction_id', 'transaction_type', 
-              'transaction_date', 'risk_score', 'anomaly_label', 'confidence_score'].includes(key)
-          )
+          'Basic Information': [
+            'customer_id', 'internal_id', 'obligor_name', 'obligor_internal_risk_rating',
+            'tin', 'country', 'industry_code', 'industry_code_type'
+          ],
+          'Credit Facility Details': [
+            'internal_credit_facility_id', 'origination_date', 'maturity_date',
+            'credit_facility_type', 'credit_facility_purpose', 'credit_facility_currency'
+          ],
+          'Exposure Information': [
+            'committed_exposure_global', 'utilized_exposure_global',
+            'probability_of_default', 'loss_given_default', 'exposure_at_default'
+          ],
+          'Financial Information': [
+            'net_income_current', 'total_assets_current', 'long_term_debt',
+            'current_assets_current', 'current_liabilities_current'
+          ],
+          'Additional Details': [
+            'guarantor_flag', 'guarantor_name', 'guarantor_tin',
+            'entity_name', 'entity_internal_risk_rating', 'anomaly_label'
+          ]
         };
 
         // Create HTML for each category
@@ -1430,13 +1610,15 @@
                   }
 
                   let formattedValue = value;
-                  if (field === 'amount') {
-                    formattedValue = new Intl.NumberFormat('en-US', {
+                  if (field.includes('exposure') || field.includes('amount')) {
+                    formattedValue = new Intl.NumberFormat('en-IN', {
                       style: 'currency',
-                      currency: 'USD'
+                      currency: 'INR'
                     }).format(value);
                   } else if (field.includes('date')) {
                     formattedValue = new Date(value).toLocaleString();
+                  } else if (field === 'anomaly_label') {
+                    formattedValue = value === 1 ? 'Anomaly' : 'Normal';
                   }
 
                   return `
@@ -1455,7 +1637,7 @@
         detailsDiv.innerHTML += `
           <div class="modal-footer">
             <button class="modal-button secondary" onclick="closeModal()">Close</button>
-            <button class="modal-button primary" onclick="exportTransactionDetails(${JSON.stringify(transaction)})">
+            <button class="modal-button primary" onclick='exportTransactionDetails(${JSON.stringify(transaction)})'>
               <i class="fas fa-download mr-2"></i>Export Details
             </button>
           </div>
@@ -1464,25 +1646,81 @@
         modal.style.display = 'block';
       }
 
+      // Add the exportTransactionDetails function separately
       function exportTransactionDetails(transaction) {
-        const data = Object.entries(transaction)
-          .map(([key, value]) => {
-            const formattedKey = key.split('_').map(word => 
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
-            return `${formattedKey}: ${value}`;
-          })
-          .join('\n');
+        try {
+          // Group fields by category
+          const categories = {
+            'Basic Information': [
+              'customer_id', 'internal_id', 'obligor_name', 'obligor_internal_risk_rating',
+              'tin', 'country', 'industry_code', 'industry_code_type'
+            ],
+            'Credit Facility Details': [
+              'internal_credit_facility_id', 'origination_date', 'maturity_date',
+              'credit_facility_type', 'credit_facility_purpose', 'credit_facility_currency'
+            ],
+            'Exposure Information': [
+              'committed_exposure_global', 'utilized_exposure_global',
+              'probability_of_default', 'loss_given_default', 'exposure_at_default'
+            ],
+            'Financial Information': [
+              'net_income_current', 'total_assets_current', 'long_term_debt',
+              'current_assets_current', 'current_liabilities_current'
+            ],
+            'Additional Details': [
+              'guarantor_flag', 'guarantor_name', 'guarantor_tin',
+              'entity_name', 'entity_internal_risk_rating', 'anomaly_label'
+            ]
+          };
 
-        const blob = new Blob([data], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `transaction_${transaction.internal_id || 'details'}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+          // Create formatted content
+          let content = 'Transaction Details Export\n';
+          content += 'Generated on: ' + new Date().toLocaleString() + '\n\n';
+
+          for (const [category, fields] of Object.entries(categories)) {
+            content += `${category}\n`;
+            content += '='.repeat(category.length) + '\n';
+            
+            fields.forEach(field => {
+              if (transaction[field] !== undefined) {
+                const formattedKey = field.split('_').map(word => 
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+                
+                let value = transaction[field];
+                
+                // Format special fields
+                if (field.includes('exposure') || field.includes('amount')) {
+                  value = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR'
+                  }).format(value);
+                } else if (field.includes('date')) {
+                  value = new Date(value).toLocaleString();
+                } else if (field === 'anomaly_label') {
+                  value = value === 1 ? 'Anomaly' : 'Normal';
+                }
+                
+                content += `${formattedKey}: ${value}\n`;
+              }
+            });
+            content += '\n';
+          }
+
+          // Create and trigger download
+          const blob = new Blob([content], { type: 'text/plain' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `transaction_${transaction.internal_id || 'details'}_${new Date().toISOString().split('T')[0]}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } catch (error) {
+          console.error('Error exporting transaction details:', error);
+          alert('Error exporting transaction details. Please try again.');
+        }
       }
 
       // Initialize DataTable with enhanced features
@@ -1499,12 +1737,12 @@
             first: '<i class="fas fa-angle-double-left"></i>',
             previous: '<i class="fas fa-angle-left"></i>',
             next: '<i class="fas fa-angle-right"></i>',
-            last: '<i class="fas fa-angle-double-right"></i>'
+            last: '<i class="fas fa-angle-double-left"></i>'
           }
         },
         pageLength: 10,
         responsive: true,
-        order: [[5, "desc"]],
+        order: [[7, "desc"]],
         stateSave: true,
         searching: true,
         processing: true,
@@ -1516,7 +1754,7 @@
             className: "text-center"
           },
           {
-            targets: 6,
+            targets: 7,
             render: function (data, type, row) {
               let badgeClass = data === "Anomaly" ? "badge-danger" : "badge-success";
               return `<span class="badge ${badgeClass}">${data}</span>`;
@@ -1524,26 +1762,17 @@
             className: "text-center"
           },
           {
-            targets: 5,
+            targets: 4,
             render: function (data, type, row) {
-              let score = parseFloat(data);
-              let color = score > 0.7 ? "text-red-600" : score > 0.4 ? "text-yellow-600" : "text-green-600";
-              return `<span class="${color} font-semibold">${data}</span>`;
-            },
-            className: "text-center"
-          },
-          {
-            targets: 3,
-            render: function (data, type, row) {
-              return new Intl.NumberFormat('en-US', {
+              return new Intl.NumberFormat('en-IN', {
                 style: 'currency',
-                currency: 'USD'
+                currency: 'INR'
               }).format(data);
             }
           }
         ],
         createdRow: function (row, data, dataIndex) {
-          if (data.status === "Anomaly") {
+          if (data[7] === "Anomaly") {
             $(row).addClass("anomaly-row");
           }
         }
@@ -1555,6 +1784,98 @@
       $('.dataTables_paginate .paginate_button').addClass('px-3 py-1 mx-1 rounded-lg border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent');
       $('.dataTables_paginate .paginate_button.current').addClass('bg-blue-500 text-white border-blue-500 hover:bg-blue-600');
       $('.dataTables_info').addClass('text-sm text-gray-600');
+
+      // Add these new functions for chart expansion
+      function expandChart(chartId, title) {
+        const chartModal = document.getElementById('chartModal');
+        const expandedChartTitle = document.getElementById('expandedChartTitle');
+        const expandedChart = document.getElementById('expandedChart');
+        
+        expandedChartTitle.textContent = title;
+        
+        // Clone the chart data and layout
+        const chart = document.getElementById(chartId);
+        const data = JSON.parse(chart.getAttribute('data-plotly'));
+        const layout = JSON.parse(chart.getAttribute('data-layout'));
+        
+        // Calculate dimensions
+        const modalWidth = window.innerWidth;
+        const modalHeight = window.innerHeight - 64; // Subtract header height
+        
+        // Adjust layout for full screen
+        layout.width = modalWidth;
+        layout.height = modalHeight;
+        
+        // Adjust margins based on chart type
+        if (chartId === 'transactionTypePlot') {
+          // For pie chart, adjust margins to accommodate legend
+          layout.margin = { 
+            t: 40, 
+            r: modalWidth * 0.2, // Reserve space for legend
+            b: 40, 
+            l: 40 
+          };
+          // Adjust legend position
+          layout.legend = {
+            ...layout.legend,
+            x: 1.1,
+            y: 0.5,
+            yanchor: 'middle',
+            xanchor: 'left'
+          };
+        } else if (chartId === 'regionalPlot') {
+          // For bar chart, adjust margins to prevent label cutoff
+          layout.margin = { 
+            t: 40, 
+            r: 40, 
+            b: 80, // More space for x-axis labels
+            l: 60 
+          };
+          // Adjust x-axis for better label display
+          layout.xaxis = {
+            ...layout.xaxis,
+            tickangle: -45,
+            automargin: true
+          };
+        } else {
+          // For line charts, use standard margins
+          layout.margin = { 
+            t: 40, 
+            r: 40, 
+            b: 60, 
+            l: 60 
+          };
+        }
+        
+        // Make sure all charts are responsive
+        layout.autosize = true;
+        
+        // Plot the expanded chart
+        Plotly.newPlot('expandedChart', data, layout, {
+          responsive: true,
+          displayModeBar: true,
+          displaylogo: false,
+          modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+          modeBarButtonsToAdd: [{
+            name: 'Download Plot',
+            icon: Plotly.Icons.download,
+            click: function(gd) {
+              Plotly.downloadImage(gd, {format: 'png', width: 1920, height: 1080, filename: 'plot'});
+            }
+          }],
+        });
+        
+        // Add resize handler
+        window.addEventListener('resize', function() {
+          Plotly.Plots.resize('expandedChart');
+        });
+        
+        chartModal.style.display = 'block';
+      }
+
+      function closeChartModal() {
+        document.getElementById('chartModal').style.display = 'none';
+      }
     </script>
   </body>
 </html>
