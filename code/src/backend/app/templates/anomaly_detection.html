@@ -978,7 +978,7 @@
           <span class="close">&times;</span>
         </div>
         <div class="modal-body">
-          <div id="transactionDetails"></div>
+        <div id="transactionDetails"></div>
         </div>
       </div>
     </div>
@@ -1140,12 +1140,12 @@
           if (xhr.status === 200) {
             try {
               const data = JSON.parse(xhr.responseText);
-              if (data.error) {
-                throw new Error(data.error);
-              }
+            if (data.error) {
+              throw new Error(data.error);
+            }
               progressBar.querySelector("div").style.width = "100%";
-              uploadLoader.style.display = "none";
-              uploadMessage.textContent = "File processed successfully!";
+            uploadLoader.style.display = "none";
+            uploadMessage.textContent = "File processed successfully!";
               uploadMessage.style.color = "#059669";
               
               // Add success icon
@@ -1153,10 +1153,10 @@
               successIcon.className = "fas fa-check-circle ml-2 text-green-500";
               uploadMessage.appendChild(successIcon);
               
-              setTimeout(() => {
-                updateDashboard(data);
-                closeUploadModal();
-              }, 1000);
+            setTimeout(() => {
+              updateDashboard(data);
+              closeUploadModal();
+            }, 1000);
             } catch (error) {
               throw new Error(error.message || "Error processing file");
             }
@@ -1167,9 +1167,9 @@
 
         xhr.onerror = function() {
           clearInterval(progressInterval);
-          uploadLoader.style.display = "none";
+            uploadLoader.style.display = "none";
           uploadMessage.textContent = "Error: Network error occurred. Please try again.";
-          uploadMessage.style.color = "#dc2626";
+            uploadMessage.style.color = "#dc2626";
           
           // Add error icon
           const errorIcon = document.createElement("i");
@@ -1203,59 +1203,59 @@
       function updateVisualizations(data) {
         // Time Series Plot
         const timeSeriesData = [
-            {
-                x: data.time_series.timestamps,
-                y: data.time_series.normal_count,
-                name: "Normal Transactions",
-                type: "scatter",
-                mode: "lines",
-                line: {
-                    shape: "spline",
-                    width: 3,
-                    color: "#60a5fa",
-                },
-                fill: "tonexty",
-                fillcolor: "rgba(96, 165, 250, 0.1)",
+          {
+            x: data.time_series.timestamps,
+            y: data.time_series.normal_count,
+            name: "Normal Transactions",
+            type: "scatter",
+            mode: "lines",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#60a5fa",
+            },
+            fill: "tonexty",
+            fillcolor: "rgba(96, 165, 250, 0.1)",
                 hovertemplate: "<b>%{x|%Y-%m-%d}</b><br>" +
                              "Normal: %{y}<br>" +
                              "<extra></extra>"
+          },
+          {
+            x: data.time_series.timestamps,
+            y: data.time_series.anomaly_count,
+            name: "Anomalous Transactions",
+            type: "scatter",
+            mode: "lines+markers",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#f87171",
             },
-            {
-                x: data.time_series.timestamps,
-                y: data.time_series.anomaly_count,
-                name: "Anomalous Transactions",
-                type: "scatter",
-                mode: "lines+markers",
-                line: {
-                    shape: "spline",
-                    width: 3,
-                    color: "#f87171",
-                },
-                marker: {
-                    size: 6,
-                    color: "#ef4444",
-                    line: {
-                        color: "#fff",
-                        width: 1,
-                    },
-                },
-                fill: "tonexty",
-                fillcolor: "rgba(248, 113, 113, 0.1)",
+            marker: {
+              size: 6,
+              color: "#ef4444",
+              line: {
+                color: "#fff",
+                width: 1,
+              },
+            },
+            fill: "tonexty",
+            fillcolor: "rgba(248, 113, 113, 0.1)",
                 hovertemplate: "<b>%{x|%Y-%m-%d}</b><br>" +
                              "Anomalies: %{y}<br>" +
                              "<extra></extra>"
-            },
+          },
         ];
 
         const timeSeriesLayout = {
-            margin: { t: 20, r: 20, b: 40, l: 40 },
-            xaxis: {
+          margin: { t: 20, r: 20, b: 40, l: 40 },
+          xaxis: {
                 title: "Date",
-                type: "date",
+            type: "date",
                 tickformat: "%Y-%m-%d",
-                showgrid: true,
-                gridcolor: "#e5e7eb",
-                linecolor: "#e5e7eb",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
                 rangeslider: { visible: true },
                 rangeselector: {
                     buttons: [
@@ -1265,26 +1265,26 @@
                         { step: 'all', label: 'All' }
                     ]
                 }
-            },
-            yaxis: {
-                title: "Number of Transactions",
-                showgrid: true,
-                gridcolor: "#e5e7eb",
-                linecolor: "#e5e7eb",
-                zeroline: false,
-            },
-            showlegend: true,
-            legend: {
-                x: 0,
-                y: 1.1,
-                orientation: "h",
+          },
+          yaxis: {
+            title: "Number of Transactions",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
+            zeroline: false,
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
                 bgcolor: "rgba(255, 255, 255, 0.8)",
                 bordercolor: "#e5e7eb",
                 borderwidth: 1,
-            },
-            plot_bgcolor: "#ffffff",
-            paper_bgcolor: "#ffffff",
-            hovermode: "x unified",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+          hovermode: "x unified",
             hoverlabel: {
                 bgcolor: "#ffffff",
                 font: { size: 14 },
@@ -1294,57 +1294,57 @@
 
         // Regional Distribution Plot
         const regionalPlotData = [
-            {
-                x: data.regional_distribution.regions,
-                y: data.regional_distribution.total_transactions,
-                name: "Total Transactions",
-                type: "bar",
-                marker: {
-                    color: "#3b82f6",
-                },
+          {
+            x: data.regional_distribution.regions,
+            y: data.regional_distribution.total_transactions,
+            name: "Total Transactions",
+            type: "bar",
+            marker: {
+              color: "#3b82f6",
+            },
                 hovertemplate: "<b>%{x}</b><br>" +
                              "Total: %{y}<br>" +
                              "<extra></extra>"
+          },
+          {
+            x: data.regional_distribution.regions,
+            y: data.regional_distribution.anomalies,
+            name: "Anomalies",
+            type: "bar",
+            marker: {
+              color: "#ef4444",
             },
-            {
-                x: data.regional_distribution.regions,
-                y: data.regional_distribution.anomalies,
-                name: "Anomalies",
-                type: "bar",
-                marker: {
-                    color: "#ef4444",
-                },
                 hovertemplate: "<b>%{x}</b><br>" +
                              "Anomalies: %{y}<br>" +
                              "<extra></extra>"
-            },
+          },
         ];
 
         const regionalLayout = {
-            margin: { t: 20, r: 20, b: 40, l: 40 },
-            barmode: "group",
-            xaxis: {
+          margin: { t: 20, r: 20, b: 40, l: 40 },
+          barmode: "group",
+          xaxis: {
                 title: "Country",
-                showgrid: true,
-                gridcolor: "#e5e7eb",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
                 tickangle: -45,
-            },
-            yaxis: {
-                title: "Number of Transactions",
-                showgrid: true,
-                gridcolor: "#e5e7eb",
-            },
-            showlegend: true,
-            legend: {
-                x: 0,
-                y: 1.1,
-                orientation: "h",
+          },
+          yaxis: {
+            title: "Number of Transactions",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
                 bgcolor: "rgba(255, 255, 255, 0.8)",
                 bordercolor: "#e5e7eb",
                 borderwidth: 1,
-            },
-            plot_bgcolor: "#ffffff",
-            paper_bgcolor: "#ffffff",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
             hoverlabel: {
                 bgcolor: "#ffffff",
                 font: { size: 14 },
@@ -1354,27 +1354,27 @@
 
         // Transaction Type Plot
         const transactionTypePlotData = [
-            {
-                values: data.transaction_types.normal_count,
-                labels: data.transaction_types.types,
-                type: "pie",
-                hole: 0.4,
-                marker: {
+          {
+            values: data.transaction_types.normal_count,
+            labels: data.transaction_types.types,
+            type: "pie",
+            hole: 0.4,
+            marker: {
                     colors: ["#3b82f6", "#34d399", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"],
-                },
-                textinfo: "label+percent",
-                textposition: "outside",
+            },
+            textinfo: "label+percent",
+            textposition: "outside",
                 textfont: { size: 10 },
-                automargin: true,
+            automargin: true,
                 hovertemplate: "<b>%{label}</b><br>" +
                              "Count: %{value}<br>" +
                              "Percentage: %{percent}<br>" +
                              "<extra></extra>"
-            },
+          },
         ];
 
         const transactionTypeLayout = {
-            margin: { t: 20, r: 20, b: 20, l: 20 },
+          margin: { t: 20, r: 20, b: 20, l: 20 },
             showlegend: true,
             legend: {
                 orientation: "v",
@@ -1386,22 +1386,22 @@
                 bordercolor: "#e5e7eb",
                 borderwidth: 1,
             },
-            annotations: [
-                {
+          annotations: [
+            {
                     font: { size: 14, color: "#1f2937" },
-                    showarrow: false,
+              showarrow: false,
                     text: "Credit Facility Types",
                     x: -0.2,
-                    y: 0.5,
+              y: 0.5,
                     yref: 'paper',
                     xref: 'paper',
                     textangle: -90,
                     align: 'center',
                     valign: 'middle'
-                },
-            ],
-            plot_bgcolor: "#ffffff",
-            paper_bgcolor: "#ffffff",
+            },
+          ],
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
             hoverlabel: {
                 bgcolor: "#ffffff",
                 font: { size: 12 },
@@ -1411,34 +1411,34 @@
 
         // Pattern Analysis Plot
         const patternData = [
-            {
-                x: data.time_series.timestamps,
-                y: data.time_series.anomaly_count.map(
-                    (val, i) => (val / (val + data.time_series.normal_count[i])) * 100
-                ),
-                name: "Anomaly Rate",
-                type: "scatter",
-                mode: "lines",
-                line: {
-                    shape: "spline",
-                    width: 3,
-                    color: "#8b5cf6",
-                },
+          {
+            x: data.time_series.timestamps,
+            y: data.time_series.anomaly_count.map(
+              (val, i) => (val / (val + data.time_series.normal_count[i])) * 100
+            ),
+            name: "Anomaly Rate",
+            type: "scatter",
+            mode: "lines",
+            line: {
+              shape: "spline",
+              width: 3,
+              color: "#8b5cf6",
+            },
                 hovertemplate: "<b>%{x|%Y-%m-%d}</b><br>" +
                              "Rate: %{y:.2f}%<br>" +
                              "<extra></extra>"
-            },
+          },
         ];
 
         const patternLayout = {
             margin: { t: 20, r: 20, b: 40, l: 40 },
-            xaxis: {
+          xaxis: {
                 title: "Date",
-                type: "date",
+            type: "date",
                 tickformat: "%Y-%m-%d",
-                showgrid: true,
-                gridcolor: "#e5e7eb",
-                linecolor: "#e5e7eb",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
                 rangeslider: { visible: true },
                 rangeselector: {
                     buttons: [
@@ -1448,27 +1448,27 @@
                         { step: 'all', label: 'All' }
                     ]
                 }
-            },
-            yaxis: {
-                title: "Anomaly Rate (%)",
-                showgrid: true,
-                gridcolor: "#e5e7eb",
-                linecolor: "#e5e7eb",
-                zeroline: false,
-                range: [0, 100],
-            },
-            showlegend: true,
-            legend: {
-                x: 0,
-                y: 1.1,
-                orientation: "h",
+          },
+          yaxis: {
+            title: "Anomaly Rate (%)",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+            linecolor: "#e5e7eb",
+            zeroline: false,
+            range: [0, 100],
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
                 bgcolor: "rgba(255, 255, 255, 0.8)",
                 bordercolor: "#e5e7eb",
                 borderwidth: 1,
-            },
-            plot_bgcolor: "#ffffff",
-            paper_bgcolor: "#ffffff",
-            hovermode: "x unified",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+          hovermode: "x unified",
             hoverlabel: {
                 bgcolor: "#ffffff",
                 font: { size: 14 },
@@ -1477,7 +1477,7 @@
         };
 
         const config = {
-            responsive: true,
+          responsive: true,
             displayModeBar: true,
             displaylogo: false,
             modeBarButtonsToRemove: ['lasso2d', 'select2d'],
@@ -1625,7 +1625,7 @@
                     <div class="${detailClass}">
                       <label>${formattedKey}:</label>
                       <span>${formattedValue || '-'}</span>
-                    </div>
+              </div>
                   `;
                 }).join('')}
               </div>
