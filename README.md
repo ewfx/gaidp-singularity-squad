@@ -71,6 +71,52 @@ Financial institutions face a major challenge when translating regulatory report
 - Implements a dynamic risk scoring system
 - Enables audit-friendly, explainable insights for compliance teams
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Flask HTML UI
+    participant Backend as Flask Backend (API Layer)
+    participant Gemini as Gemini AI API
+    participant RuleEngine as Rulebook Generator
+    participant RegexParser as Regex Rule Parser
+    participant CSVValidator as CSV Validation Engine
+    participant AnomalyDetector as ML Anomaly Engine
+    participant JSONStore as Local JSON Rulebook
+
+    %% PDF Upload & Rulebook Generation
+    User->>UI: Upload regulatory PDF
+    UI->>Backend: POST /generate-rulebook
+    Backend->>Gemini: Send PDF content for processing
+    Gemini-->>Backend: Extracted regulatory instructions
+    Backend->>RuleEngine: Parse relevant rule sections
+    RuleEngine->>RegexParser: Convert instructions to regex rules
+    RegexParser-->>RuleEngine: Regex rules (field-wise)
+    RuleEngine->>JSONStore: Save rulebook.json
+    JSONStore-->>Backend: Confirmation
+    Backend-->>UI: Display generated rulebook summary
+
+    %% CSV Upload & Validation
+    User->>UI: Upload CSV transactional file
+    UI->>Backend: POST /validate-csv
+    Backend->>JSONStore: Load rulebook.json
+    Backend->>CSVValidator: Apply regex validations to CSV
+    CSVValidator-->>Backend: Validation results (violations, matched rules)
+    Backend-->>UI: Display validation results with rule references
+
+    %% Anomaly Detection
+    User->>UI: Click "Detect Anomalies"
+    UI->>Backend: GET /detect-anomalies
+    Backend->>CSVValidator: Preprocess numeric features
+    CSVValidator->>AnomalyDetector: Send processed dataset
+    AnomalyDetector-->>Backend: Anomaly labels and risk scores
+    Backend-->>UI: Display anomaly summary and risk insights
+
+    %% Remediation (Optional)
+    Backend->>Backend: Generate remediation suggestions
+    Backend-->>UI: Display automated recommendations
+
+```
+
 ---
 
 ## How We Built It
