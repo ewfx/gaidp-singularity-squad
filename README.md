@@ -1,8 +1,3 @@
-
-# Project Title
-
-A brief description of what this project does and who it's for
-
 # RuleSense: Gen AI-powered Data Profiling for Regulatory Reporting
 
 ## Table of Contents
