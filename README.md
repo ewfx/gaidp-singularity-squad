@@ -437,3 +437,30 @@ This dataset contains enriched features for training and evaluating unsupervised
 | primary_source_of_repayment_lei | object | Primary source of repayment lei |
 
 
+## Regulatory Rules
+
+RuleSense leverages regulatory instructions extracted from official reporting documents such as the FR Y-14Q.
+
+The extracted rules are used for validating transactional data in line with compliance expectations. These instructions are manually and LLM-assisted parsed from original documentation.
+
+📄 **View the extracted regulatory instructions (PDF format)**:  
+[Download Rulebook.pdf](artifacts/dataset/Rulebook.pdf)
+
+
+## Submission Deliverables
+
+- ✅ Flask backend with PDF parsing, rule generation, validation, and anomaly detection
+- ✅ Jinja2 HTML UI for CSV upload and result display
+- ✅ Gemini-powered rule extraction engine
+- ✅ Regex-based rule validation engine
+- ✅ Isolation Forest and LOF for anomaly detection
+- ✅ Three datasets:
+  - Validation
+  - Anomaly Detection
+  - Clean Baseline
+- ✅ Dataset schema
+- ✅ Rulebook Pdf
+- ✅ Sequence & tech stack diagrams: Mermaid-based
+- ✅ `.env.example` and Docker setup
+- ✅ Documentation and project README
+- ✅ Demo video
