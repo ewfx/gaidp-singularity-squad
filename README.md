@@ -139,6 +139,70 @@ sequenceDiagram
 
 - Built using flask templates to allow document and CSV uploads, validation display, and anomaly review
 
+```mermaid
+flowchart TD
+  subgraph Client
+    Browser["Web Browser (User)"]
+  end
+
+  subgraph UI["Flask Frontend"]
+    HTMLUI["HTML Templates (Jinja2)"]
+  end
+
+  subgraph WebServer["Flask Backend"]
+    Flask["Flask App"]
+    API["API Routes"]
+  end
+
+  subgraph RulebookEngine["Rulebook Generation Engine"]
+    Gemini["Gemini AI (Regulatory PDF Processor)"]
+    RegexParser["Custom Regex Rule Parser"]
+    RulebookJSON["Generated Rulebook (JSON)"]
+  end
+
+  subgraph Validator["CSV Validation Engine"]
+    CSVUpload["CSV Upload & Parser"]
+    RuleValidator["Regex Validator"]
+    ValidationResults["Validation Report"]
+  end
+
+  subgraph AnomalyDetector["Anomaly Detection Engine"]
+    Scaler["StandardScaler"]
+    IFModel["Isolation Forest"]
+    LOFModel["LOF / DBSCAN"]
+    MLReport["Anomaly Report"]
+  end
+
+  subgraph Storage["Local Storage"]
+    LocalFS["Filesystem (uploads, rulebooks, logs)"]
+  end
+
+  %% UI & Routing
+  Browser --> HTMLUI
+  HTMLUI --> Flask
+  Flask --> API
+
+  %% Rulebook Creation Flow
+  API --> Gemini
+  Gemini --> RegexParser
+  RegexParser --> RulebookJSON
+  RulebookJSON --> LocalFS
+
+  %% CSV Validation Flow
+  API --> CSVUpload
+  CSVUpload --> RuleValidator
+  RulebookJSON --> RuleValidator
+  RuleValidator --> ValidationResults
+  ValidationResults --> LocalFS
+
+  %% Anomaly Detection Flow
+  RuleValidator --> Scaler
+  Scaler --> IFModel
+  Scaler --> LOFModel
+  IFModel --> MLReport
+  LOFModel --> MLReport
+  MLReport --> LocalFS
+```
 ---
 
 ## Challenges We Faced
