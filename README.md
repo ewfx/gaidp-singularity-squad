@@ -69,15 +69,15 @@ Financial institutions face a major challenge when translating regulatory report
 ```mermaid
 sequenceDiagram
     %% Participants with icons
-    actor User as User <<fa-user>>
-    participant UI as Flask HTML UI <<fa-chrome>>
-    participant Backend as Flask Backend (API Layer) <<fa-cogs>>
-    participant Gemini as Gemini AI API <<fa-robot>>
-    participant RuleEngine as Rulebook Generator <<fa-book>>
-    participant RegexParser as Regex Rule Parser <<fa-code>>
-    participant CSVValidator as CSV Validation Engine <<fa-table>>
-    participant AnomalyDetector as ML Anomaly Engine <<fa-chart-line>>
-    participant JSONStore as Local JSON Rulebook <<fa-database>>
+    actor User as User 
+    participant UI as Flask HTML UI 
+    participant Backend as Flask Backend (API Layer) 
+    participant Gemini as Gemini AI API 
+    participant RuleEngine as Rulebook Generator
+    participant RegexParser as Regex Rule Parser 
+    participant CSVValidator as CSV Validation Engine 
+    participant AnomalyDetector as ML Anomaly Engine 
+    participant JSONStore as Local JSON Rulebook
 
     %% PDF Upload & Rulebook Generation
     User->>UI: Upload regulatory PDF
