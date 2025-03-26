@@ -16,34 +16,39 @@ The platform supports the complete pipeline:
 ## Architecture Diagram (High-Level)
 
 ```mermaid
-flowchart TD
-    subgraph User Interaction
-        Browser["Browser"]
-        HTML["Flask HTML Templates"]
-    end
+graph TD
 
-    subgraph Backend Services
-        Flask["Flask App"]
-        RuleEngine["Rulebook Generator"]
-        Validator["Regex Validation Engine"]
-        Anomaly["Anomaly Detection Engine"]
-    end
+  %% User Interaction
+  User[User Web Client] --> Flask[Flask API Server]
 
-    subgraph External API
-        Gemini["Gemini AI API"]
-    end
+  %% API Endpoints
+  Flask --> UploadPDF[POST /upload-pdf]
+  Flask --> ValidateCSV[POST /validate-csv]
+  Flask --> GetAnomalies[POST /get-anomalies]
 
-    subgraph Storage
-        Rulebook["rulebook.json"]
-        Uploads["CSV Uploads"]
-        Logs["Validation & Anomaly Reports"]
-    end
+  %% Rulebook Generation
+  UploadPDF --> PDFParser[Extract PDF Text]
+  PDFParser --> Gemini[Gemini AI API]
+  Gemini --> Extractor[Extract Rule Sentences]
+  Extractor --> RegexGen[Generate Regex Rules]
+  RegexGen --> Rulebook[Save rulebook.json]
 
-    Browser --> HTML --> Flask
-    Flask --> RuleEngine --> Gemini
-    RuleEngine --> Rulebook
-    Flask --> Validator --> Rulebook
-    Flask --> Validator --> Uploads
-    Validator --> Logs
-    Flask --> Anomaly --> Uploads
-    Anomaly --> Logs
+  %% CSV Validation
+  ValidateCSV --> CSVReader1[Read Transaction CSV]
+  CSVReader1 --> Rulebook
+  Rulebook --> Validator[Apply Regex Rules]
+  Validator --> ValidationReport[Generate Validation Report]
+
+  %% Anomaly Detection
+  GetAnomalies --> CSVReader2[Read Transaction CSV]
+  CSVReader2 --> Scaler[Scale Numeric Features]
+  Scaler --> IsolationForest[Isolation Forest]
+  Scaler --> LOF[LOF / DBSCAN]
+  IsolationForest --> AnomalyReport[Generate Anomaly Report]
+  LOF --> AnomalyReport
+
+  %% Storage
+  Rulebook --> Storage[Local File Storage]
+  ValidationReport --> Storage
+  AnomalyReport --> Storage
+```
