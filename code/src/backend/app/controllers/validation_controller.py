@@ -46,19 +46,41 @@ class ValidationResource(Resource):
             csv_file = args['csv_file']
 
             if not csv_file:
-                return {'error': 'No file uploaded'}, 400
+                return jsonify({
+                    'status': 'error',
+                    'message': 'No file uploaded',
+                    'data': None
+                }), 400
 
             # Validate data using rulebook service
-            violations = rulebook_service.validate_transactions(csv_file, rulebook_id)
+            validation_results = rulebook_service.validate_transactions(csv_file, rulebook_id)
             
             # Get total transactions from the CSV
             df = pd.read_csv(csv_file)
             total_transactions = len(df)
             
-            return {
+            # Format the response
+            response_data = {
                 'status': 'success',
-                'total_transactions': total_transactions,
-                'violations': violations
+                'message': 'Validation completed successfully',
+                'data': {
+                    'total_transactions': total_transactions,
+                    'violations': validation_results
+                }
             }
+            
+            return jsonify(response_data)
+            
+        except ValueError as e:
+            return jsonify({
+                'status': 'error',
+                'message': str(e),
+                'data': None
+            }), 400
+            
         except Exception as e:
-            return {'error': str(e)}, 500 
+            return jsonify({
+                'status': 'error',
+                'message': f'An error occurred during validation: {str(e)}',
+                'data': None
+            }), 500 

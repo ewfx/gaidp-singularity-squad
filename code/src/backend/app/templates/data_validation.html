@@ -818,63 +818,90 @@
           throw new Error("Invalid response format");
         }
 
-        // Extract data from the new response format
-        const responseData = data.data;
-        if (!responseData) {
-          throw new Error("Missing data in response");
-        }
-
-        const totalTransactions = responseData.total_transactions || 0;
-        const validTransactions = responseData.valid_transactions || 0;
-        const invalidTransactions = responseData.invalid_transactions || 0;
-        const violations = responseData.violations || [];
+        // Extract data from the nested response structure
+        const totalTransactions = data.violations?.violations.total_rows || 0;
+        const violations = data.violations?.violations || {};
 
         // Update statistics
         document.getElementById("totalRecords").textContent = totalTransactions;
-        document.getElementById("validRecords").textContent = validTransactions;
+        document.getElementById("validRecords").textContent =
+          violations.valid_rows || 0;
         document.getElementById("invalidRecords").textContent =
-          invalidTransactions;
-        document.getElementById("validationRate").textContent =
-          responseData.validation_rate || "0%";
+          violations.invalid_rows || 0;
+        document.getElementById("validationRate").textContent = `${
+          violations.validation_rate || 0
+        }%`;
 
         // Update error table
         errorTable.clear();
-        violations.forEach((violation) => {
-          if (!violation || !violation.rule_id) return;
 
-          // Find the matching rule from the rulebook
-          const rule = currentRulebook?.rules?.find(
-            (r) => r.column_name === violation.rule_id
-          );
+        // Process row validations
+        if (violations.row_validations) {
+          violations.row_validations.forEach((row) => {
+            if (!row.errors || !row.errors.length) return;
 
-          errorTable.row.add({
-            row_index: violation.row_index || "N/A",
-            column: violation.rule_id,
-            value: violation.row_data?.[violation.rule_id] || "N/A",
-            expected_pattern: rule
-              ? rule.regex_pattern.replace(/^r"|"$/g, "")
-              : "N/A",
-            description: rule ? rule.description : "N/A",
+            row.errors.forEach((error) => {
+              errorTable.row.add({
+                row_index: row.row_index,
+                column: error.column,
+                value: error.value,
+                expected_pattern: error.pattern,
+                description: error.description,
+              });
+            });
           });
-        });
+        }
+
         errorTable.draw();
 
         // Update charts
-        updateErrorDistributionChart(violations);
-        updateValidationResultsChart(validTransactions, invalidTransactions);
+        updateErrorDistributionChart(violations.column_validations);
+        updateValidationResultsChart(
+          violations.valid_rows || 0,
+          violations.invalid_rows || 0
+        );
+
+        // Update summary information if available
+        if (violations.summary) {
+          console.log(`Total columns: ${violations.summary.total_columns}`);
+          console.log(`Columns found: ${violations.summary.columns_found}`);
+          console.log(`Columns missing: ${violations.summary.columns_missing}`);
+        }
       }
 
-      function updateErrorDistributionChart(violations) {
-        if (!Array.isArray(violations)) return;
+      function updateErrorDistributionChart(columnValidations) {
+        if (!columnValidations || typeof columnValidations !== "object") return;
 
         const columnErrors = {};
-        violations.forEach((violation) => {
-          if (!violation?.rule_id) return;
-          if (!columnErrors[violation.rule_id]) {
-            columnErrors[violation.rule_id] = 0;
+        Object.entries(columnValidations).forEach(([column, data]) => {
+          if (data.invalid > 0) {
+            columnErrors[column] = data.invalid;
           }
-          columnErrors[violation.rule_id]++;
         });
+
+        // If no errors, show empty chart
+        if (Object.keys(columnErrors).length === 0) {
+          const data = [
+            {
+              values: [1],
+              labels: ["No Errors"],
+              type: "pie",
+              hole: 0.4,
+              marker: {
+                colors: ["#10B981"],
+              },
+            },
+          ];
+
+          const layout = {
+            margin: { t: 0, b: 0, l: 0, r: 0 },
+            showlegend: true,
+            legend: { orientation: "h", y: -0.2 },
+          };
+
+          Plotly.newPlot("errorDistributionChart", data, layout);
+          return;
+        }
 
         const data = [
           {

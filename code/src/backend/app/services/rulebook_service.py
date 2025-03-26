@@ -212,143 +212,128 @@ class RulebookService:
             raise Exception(f"Error deleting rulebook: {str(e)}")
 
     def validate_transactions(self, csv_file, rulebook_id):
-        """Validate transactions from CSV against rulebook rules"""
+        """Validate transactions against rulebook rules"""
         try:
-            # Get rulebook
+            # Read CSV file
+            df = pd.read_csv(csv_file)
+            total_rows = len(df)
+            
+            # Get rulebook rules
             rulebook = self.get_rulebook(rulebook_id)
             if not rulebook:
                 raise ValueError("Rulebook not found")
             
-            if rulebook.get('status') != 'COMPLETED':
-                raise ValueError("Rulebook is not ready for validation")
-            
-            # Read CSV file
-            try:
-                df = pd.read_csv(csv_file)
-            except Exception as e:
-                raise ValueError(f"Error reading CSV file: {str(e)}")
-            
             # Initialize validation results
             validation_results = {
-                'total_rows': len(df),
-                'valid_rows': 0,
-                'invalid_rows': 0,
-                'row_validations': [],
-                'column_validations': {},
-                'summary': {
-                    'total_columns': len(rulebook['rules']),
-                    'columns_found': 0,
-                    'columns_missing': 0,
-                    'validation_stats': {}
+                "total_transactions": total_rows,  # Set total rows from CSV
+                "violations": {
+                    "total_rows": total_rows,  # Set total rows from CSV
+                    "valid_rows": 0,
+                    "invalid_rows": 0,
+                    "row_validations": [],
+                    "column_validations": {},
+                    "summary": {
+                        "total_columns": len(rulebook.get("rules", [])),
+                        "columns_found": len(df.columns),
+                        "columns_missing": 0,
+                        "validation_stats": {}
+                    },
+                    "validation_rate": 0.0
                 }
             }
+            
+            # Track column validation stats
+            column_stats = {}
             
             # Validate each row
             for index, row in df.iterrows():
                 row_validation = {
-                    'row_index': index + 1,
-                    'row_data': row.to_dict(),
-                    'column_validations': {},
-                    'is_valid': True
+                    "row_index": index + 1,
+                    "row_data": {},
+                    "is_valid": True,
+                    "errors": []
                 }
                 
-                # Validate each rule
-                for rule in rulebook['rules']:
-                    column = rule['column_name']
-                    pattern = rule['regex_pattern']
-                    
-                    # Clean pattern (remove r"..." if present)
-                    if pattern.startswith('r"') and pattern.endswith('"'):
-                        pattern = pattern[2:-1]
-                    
-                    # Handle special cases
-                    if pattern == '.*':
-                        pattern = r'.*'  # Allow any characters
-                    elif pattern == 'N/A':
-                        pattern = r'.*'  # Allow any characters
-                    elif pattern == 'XX':
-                        pattern = r'.*'  # Allow any characters
-                    elif pattern == '??':
-                        pattern = r'.*'  # Allow any characters
-                    elif pattern == 'invalid-date':
-                        pattern = r'^\d{4}-\d{2}-\d{2}$'  # Standard date format
-                    
-                    # Initialize column validation stats if not exists
-                    if column not in validation_results['column_validations']:
-                        validation_results['column_validations'][column] = {
-                            'pattern': pattern,
-                            'description': rule['description'],
-                            'valid_count': 0,
-                            'invalid_count': 0,
-                            'total_validations': 0
-                        }
-                    
-                    # Check if column exists in CSV
-                    if column not in row:
-                        row_validation['column_validations'][column] = {
-                            'is_valid': False,
-                            'error': f"Column '{column}' not found in CSV"
-                        }
-                        row_validation['is_valid'] = False
+                # Convert row data to dict and handle NaN values
+                for col in df.columns:
+                    value = row.get(col)
+                    if pd.isna(value):
+                        row_validation["row_data"][col] = None
+                    else:
+                        row_validation["row_data"][col] = str(value)
+                
+                # Validate each column against rules
+                for rule in rulebook.get("rules", []):
+                    column = rule.get("column_name")
+                    if column not in df.columns:
+                        validation_results["violations"]["summary"]["columns_missing"] += 1
                         continue
+                        
+                    value = row.get(column)
+                    pattern = rule.get("regex_pattern", "")
                     
-                    # Update column found count
-                    if index == 0:
-                        validation_results['summary']['columns_found'] += 1
+                    # Clean pattern by removing r"..." format
+                    pattern = pattern.replace('r"', '').replace('"', '')
                     
-                    # Get value and validate
-                    value = str(row[column])
-                    validation_results['column_validations'][column]['total_validations'] += 1
+                    # Skip validation if value is empty
+                    if pd.isna(value):
+                        continue
+                        
+                    # Convert value to string for regex matching
+                    value_str = str(value)
                     
                     try:
-                        # Handle empty values
-                        if pd.isna(value) or value.strip() == '':
-                            is_valid = True  # Empty values are considered valid
-                        else:
-                            is_valid = bool(re.fullmatch(pattern, value))
-                        
-                        row_validation['column_validations'][column] = {
-                            'is_valid': is_valid,
-                            'value': value,
-                            'pattern': pattern
-                        }
-                        
-                        if is_valid:
-                            validation_results['column_validations'][column]['valid_count'] += 1
-                        else:
-                            validation_results['column_validations'][column]['invalid_count'] += 1
-                            row_validation['is_valid'] = False
-                            row_validation['column_validations'][column]['error'] = f"Value '{value}' does not match pattern '{pattern}'"
+                        if not re.match(pattern, value_str):
+                            row_validation["is_valid"] = False
+                            row_validation["errors"].append({
+                                "column": column,
+                                "value": value_str,
+                                "pattern": pattern,
+                                "description": rule.get("description", "Invalid format")
+                            })
                             
-                    except re.error as e:
-                        row_validation['column_validations'][column] = {
-                            'is_valid': False,
-                            'error': f"Invalid regex pattern: {str(e)}"
-                        }
-                        row_validation['is_valid'] = False
+                            # Update column stats
+                            if column not in column_stats:
+                                column_stats[column] = {"valid": 0, "invalid": 0}
+                            column_stats[column]["invalid"] += 1
+                    except Exception as e:
+                        row_validation["is_valid"] = False
+                        row_validation["errors"].append({
+                            "column": column,
+                            "value": value_str,
+                            "pattern": pattern,
+                            "description": f"Validation error: {str(e)}"
+                        })
+                        
+                        if column not in column_stats:
+                            column_stats[column] = {"valid": 0, "invalid": 0}
+                        column_stats[column]["invalid"] += 1
                 
-                # Update row counts
-                if row_validation['is_valid']:
-                    validation_results['valid_rows'] += 1
+                # Update row validation stats
+                if row_validation["is_valid"]:
+                    validation_results["violations"]["valid_rows"] += 1
                 else:
-                    validation_results['invalid_rows'] += 1
+                    validation_results["violations"]["invalid_rows"] += 1
                 
-                validation_results['row_validations'].append(row_validation)
+                validation_results["violations"]["row_validations"].append(row_validation)
             
-            # Calculate missing columns
-            validation_results['summary']['columns_missing'] = (
-                validation_results['summary']['total_columns'] - 
-                validation_results['summary']['columns_found']
-            )
+            # Update column validations
+            for column in df.columns:
+                if column not in column_stats:
+                    column_stats[column] = {"valid": 0, "invalid": 0}
+                column_stats[column]["valid"] = validation_results["violations"]["valid_rows"]
+                validation_results["violations"]["column_validations"][column] = column_stats[column]
+            
+            # Calculate validation rate
+            if total_rows > 0:
+                validation_results["violations"]["validation_rate"] = round(
+                    (validation_results["violations"]["valid_rows"] / total_rows) * 100, 2
+                )
             
             return validation_results
             
-        except ValueError as e:
-            current_app.logger.error(f"Validation error: {str(e)}")
-            raise ValueError(str(e))
         except Exception as e:
-            current_app.logger.error(f"Unexpected error during validation: {str(e)}")
-            raise ValueError(f"Error validating transactions: {str(e)}")
+            raise ValueError(f"Validation error: {str(e)}")
 
     def create_rulebook_sync(self, file, rulebook_name, description):
         """Create a new rulebook synchronously"""
