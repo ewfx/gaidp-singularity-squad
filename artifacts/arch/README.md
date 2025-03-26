@@ -77,3 +77,9 @@ graph TD
   ValidationReport --> Storage
   AnomalyReport --> Storage
 ```
+## 🧠 Design Considerations
+ - Modular Design: Each task is encapsulated in its own service (parsing, validation, anomaly detection).
+ - Loose Coupling: JSON and CSV files are the contract between services.
+ - Explainability: Regex rules and validation errors are transparent and auditable.
+ - Extendability: Easy to integrate more LLMs or downstream systems (e.g., databases, APIs).
+ - Security: Supports .env, input validation, and file size checks.
