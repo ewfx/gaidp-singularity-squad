@@ -305,7 +305,7 @@ class RulebookService:
                         if pd.isna(value) or value.strip() == '':
                             is_valid = True  # Empty values are considered valid
                         else:
-                            is_valid = bool(re.match(pattern, value))
+                            is_valid = bool(re.fullmatch(pattern, value))
                         
                         row_validation['column_validations'][column] = {
                             'is_valid': is_valid,
