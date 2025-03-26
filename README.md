@@ -25,7 +25,7 @@ RuleSense is a Gen AI-powered compliance assistant designed to automate regulato
 
 ## Demo
 
-- Live Demo: [Link to Demo](#)
+- Live Demo: [Link to Demo](https://drive.google.com/file/d/14ohjSF69MOwovV-6GUIg_t_cBEYsRBm2/view?usp=sharing)
 - Video Walkthrough: [Link to Video](#)
 
 Screenshots:
