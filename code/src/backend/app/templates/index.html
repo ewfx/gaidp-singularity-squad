@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleSense | AI-Powered Data Profiling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/static/4784338.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-[#0f172a] text-white">
+    <!-- Navbar -->
+    <nav
+      class="flex items-center justify-between w-full px-8 py-4 border-b border-gray-700 bg-[#0f172a]"
+    >
+      <div class="flex items-center space-x-3">
+        <img
+          src="/static/undraw_data-processing_z2q6.svg"
+          alt="Logo"
+          class="w-8 h-8 invert"
+        />
+        <span class="text-2xl font-bold text-white">RuleSense</span>
+        <div
+          class="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-md hidden sm:inline-block"
+        >
+          AI v1.0
+        </div>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a
+          href="/docs"
+          class="text-gray-400 hover:text-white hidden md:inline-block"
+          >Docs</a
+        >
+        <a
+          href="/dashboard"
+          class="text-white bg-blue-500 hover:bg-blue-600 px-5 py-2 rounded-md"
+          >Get Started</a
+        >
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section
+      class="w-full bg-[#0f172a] pt-20 pb-10 px-8 min-h-[80vh] flex items-center"
+    >
+      <div
+        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between w-full"
+      >
+        <!-- Text -->
+        <div class="max-w-2xl">
+          <h1
+            class="text-4xl md:text-5xl font-extrabold text-white leading-tight"
+          >
+            Automate Your <br class="hidden md:block" />
+            <span class="text-blue-400">Data Profiling Workflow</span>
+          </h1>
+          <p class="mt-4 text-gray-300 text-lg">
+            Upload regulatory documents, extract validation rules using AI, and
+            profile your datasets in real-time with RuleSense.
+          </p>
+
+          <!-- Stats -->
+          <div class="mt-4 flex flex-wrap gap-4 text-sm text-gray-400">
+            <span>📄 10+ Templates</span>
+            <span>⚙️ 100+ Validation Rules</span>
+            <span>📊 50K+ Records Profiled</span>
+          </div>
+
+          <!-- CTA -->
+          <div class="mt-6 space-x-3">
+            <a
+              href="/dashboard"
+              class="inline-block bg-blue-500 text-white px-5 py-3 rounded-md hover:bg-blue-600"
+            >
+              Try it Now →
+            </a>
+          </div>
+        </div>
+
+        <!-- SVG Illustration -->
+        <div class="mt-10 md:mt-0 md:pl-8 flex justify-center w-full md:w-auto">
+          <img
+            src="/static/undraw_data-processing_z2q6.svg"
+            alt="Data Profiling Illustration"
+            class="max-w-md w-full"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature Grid -->
+    <section class="bg-[#0f172a] pt-0 pb-20">
+      <div class="max-w-7xl mx-auto px-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div class="p-8 bg-gray-800 rounded-xl shadow-sm h-full">
+            <h3 class="font-semibold text-xl mb-2 text-white">
+              AI Rule Extraction
+            </h3>
+            <p class="text-sm text-gray-400">
+              Automatically extract profiling rules from regulatory PDFs using
+              large language models.
+            </p>
+          </div>
+          <div class="p-8 bg-gray-800 rounded-xl shadow-sm h-full">
+            <h3 class="font-semibold text-xl mb-2 text-white">
+              Drag & Drop Upload
+            </h3>
+            <p class="text-sm text-gray-400">
+              Effortlessly upload documents for rule extraction or datasets for
+              validation.
+            </p>
+          </div>
+          <div class="p-8 bg-gray-800 rounded-xl shadow-sm h-full">
+            <h3 class="font-semibold text-xl mb-2 text-white">
+              Live Profiling Results
+            </h3>
+            <p class="text-sm text-gray-400">
+              Instant insights, violation reports, and risk scoring for your
+              data.
+            </p>
+          </div>
+          <div class="p-8 bg-gray-800 rounded-xl shadow-sm h-full">
+            <h3 class="font-semibold text-xl mb-2 text-white">Tailwind UI</h3>
+            <p class="text-sm text-gray-400">
+              Responsive and lightweight, styled with modern Tailwind utility
+              classes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

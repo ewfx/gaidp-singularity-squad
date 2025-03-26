@@ -53,6 +53,7 @@ def create_app():
     from .controllers.dashboard_controller import dashboard_bp
     from .controllers.anomaly_controller import api as anomaly_ns, anomaly_bp
     from .controllers.validation_controller import validation_bp, api as validation_api
+    from .controllers.home_controller import home_bp
 
     # Register REST API namespaces
     api.add_namespace(rulebook_ns)
@@ -60,6 +61,7 @@ def create_app():
     api.add_namespace(validation_api)
 
     # Register template rendering blueprints
+    app.register_blueprint(home_bp)  # Register home blueprint first (root route)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(anomaly_bp)
     app.register_blueprint(validation_bp)
