@@ -40,13 +40,13 @@ Screenshots:
   ![Rulebooks](artifacts/screenshots/rulebook2.jpeg)
   
 - Transactions Data Validator
-  ![Transactions Validator](artifacts/screenshots/anamoly1.jpeg)
+  ![Transactions Validator](artifacts/screenshots/validaton.jpeg)
   
 - Anomaly Detector  
   ![Anomaly Detector](artifacts/screenshots/anamoly1.jpeg)
 
 - Anomaly Detector  
-  ![Anomaly Detector](artifacts/screenshots/validator1.jpeg)
+  ![Anomaly Detector](artifacts/screenshots/anamoly2.jpeg)
 
 ---
 
