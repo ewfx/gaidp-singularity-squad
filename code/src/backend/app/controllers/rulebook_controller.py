@@ -1,4 +1,4 @@
-from flask import request, send_file
+from flask import request, send_file, render_template
 from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from ..services.rulebook_service import RulebookService
@@ -8,6 +8,7 @@ import os
 import uuid
 from datetime import datetime
 import json
+from flask import current_app
 
 # Create a custom JSON encoder
 class DateTimeEncoder(json.JSONEncoder):
@@ -262,26 +263,83 @@ class TransactionValidation(Resource):
         }
     )
     def post(self, uuid):
-        """Validate transactions from CSV against a rulebook
-        
-        This endpoint accepts a CSV file containing transactions and validates them
-        against the rules generated from the specified rulebook.
-        
-        The CSV file must contain columns that match the rule conditions.
-        """
-        args = validation_parser.parse_args()
-        csv_file = args['csv_file']
-        
-        if not csv_file:
-            api.abort(400, "No CSV file provided")
-        
+        """Validate transactions from CSV against rulebook rules"""
         try:
-            violations = rulebook_service.validate_transactions(csv_file, uuid)
-            return {
-                'total_transactions': len(violations),
-                'violations': violations
-            }
-        except ValueError as e:
-            api.abort(400, str(e))
+            args = validation_parser.parse_args()
+            csv_file = args['csv_file']
+            
+            if not csv_file:
+                api.abort(400, "No CSV file provided")
+            
+            # Validate transactions using the service
+            try:
+                validation_results = rulebook_service.validate_transactions(csv_file, uuid)
+            except ValueError as e:
+                current_app.logger.error(f"Validation error: {str(e)}")
+                api.abort(400, str(e))
+            except Exception as e:
+                current_app.logger.error(f"Unexpected error during validation: {str(e)}")
+                api.abort(500, f"Error validating transactions: {str(e)}")
+            
+            # Check if this is an API request or web browser request
+            if request.headers.get('Accept', '').startswith('application/json'):
+                # Convert NaN values to None for JSON serialization
+                def clean_nan(obj):
+                    if isinstance(obj, dict):
+                        return {k: clean_nan(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [clean_nan(item) for item in obj]
+                    elif isinstance(obj, float) and obj != obj:  # Check for NaN
+                        return None
+                    return obj
+                
+                cleaned_results = clean_nan(validation_results)
+                
+                # Return JSON response for API requests
+                return {
+                    'success': True,
+                    'message': 'Validation completed successfully',
+                    'data': {
+                        'total_transactions': cleaned_results['total_rows'],
+                        'valid_transactions': cleaned_results['valid_rows'],
+                        'invalid_transactions': cleaned_results['invalid_rows'],
+                        'validation_rate': f"{(cleaned_results['valid_rows'] / cleaned_results['total_rows'] * 100):.1f}%" if cleaned_results['total_rows'] > 0 else "0%",
+                        'violations': [
+                            {
+                                'row_index': row['row_index'],
+                                'rule_id': column,
+                                'row_data': row['row_data'],
+                                'error': validation.get('error', 'Validation failed')
+                            }
+                            for row in cleaned_results['row_validations']
+                            for column, validation in row['column_validations'].items()
+                            if not validation['is_valid']
+                        ],
+                        'column_validations': cleaned_results['column_validations'],
+                        'summary': cleaned_results['summary']
+                    }
+                }
+            else:
+                # Return HTML template for web browser requests
+                page = request.args.get('page', 1, type=int)
+                rows_per_page = 10
+                
+                # Calculate pagination
+                total_rows = len(validation_results['row_validations'])
+                total_pages = (total_rows + rows_per_page - 1) // rows_per_page
+                start_idx = (page - 1) * rows_per_page
+                end_idx = min(start_idx + rows_per_page, total_rows)
+                
+                # Get paginated rows
+                paginated_rows = validation_results['row_validations'][start_idx:end_idx]
+                
+                # Render template with results
+                return render_template('data_validation.html',
+                                    results=validation_results,
+                                    paginated_rows=paginated_rows,
+                                    current_page=page,
+                                    total_pages=total_pages)
+            
         except Exception as e:
+            current_app.logger.error(f"Unexpected error during validation: {str(e)}")
             api.abort(500, f"Error validating transactions: {str(e)}") 

@@ -339,21 +339,82 @@
 
             <!-- Error Details Table -->
             <div class="bg-white rounded-lg shadow p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                Validation Error Details
-              </h3>
-              <table id="errorTable" class="w-full">
-                <thead>
-                  <tr>
-                    <th>Row</th>
-                    <th>Column</th>
-                    <th>Value</th>
-                    <th>Expected Pattern</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-base font-semibold text-gray-900">
+                  Validation Error Details
+                </h3>
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <input
+                      type="text"
+                      id="searchInput"
+                      placeholder="Search errors..."
+                      class="pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-48"
+                    />
+                    <i
+                      class="fas fa-search absolute left-2.5 top-2 text-gray-400 text-xs"
+                    ></i>
+                  </div>
+                  <select
+                    id="pageLength"
+                    class="px-2.5 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                  </select>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table
+                  id="errorTable"
+                  class="min-w-full divide-y divide-gray-200"
+                >
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        scope="col"
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Row
+                      </th>
+                      <th
+                        scope="col"
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Column
+                      </th>
+                      <th
+                        scope="col"
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Value
+                      </th>
+                      <th
+                        scope="col"
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Pattern
+                      </th>
+                      <th
+                        scope="col"
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Description
+                      </th>
+                      <th
+                        scope="col"
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- Table rows will be populated by DataTables -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -474,17 +535,98 @@
     </div>
 
     <script>
-      // Initialize DataTable
+      // Initialize DataTable with improved configuration
       let errorTable = $("#errorTable").DataTable({
         pageLength: 10,
-        dom: '<"flex justify-between items-center mb-4"<"flex items-center"l><"flex"f>><"my-4"rt><"flex justify-between"<"flex items-center"i><"flex items-center"p>>',
+        dom: '<"top flex items-center justify-between mb-4"lf>rt<"bottom flex items-center justify-between mt-3"ip>',
         columns: [
-          { data: "row_index" },
-          { data: "column" },
-          { data: "value" },
-          { data: "expected_pattern" },
-          { data: "description" },
+          {
+            data: "row_index",
+            render: function (data, type, row) {
+              return `<span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-medium">${data}</span>`;
+            },
+          },
+          {
+            data: "column",
+            render: function (data, type, row) {
+              return `<span class="text-xs font-medium text-gray-900">${data}</span>`;
+            },
+          },
+          {
+            data: "value",
+            render: function (data, type, row) {
+              return `<span class="text-xs text-gray-600">${data}</span>`;
+            },
+          },
+          {
+            data: "expected_pattern",
+            render: function (data, type, row) {
+              return `<code class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono">${data}</code>`;
+            },
+          },
+          {
+            data: "description",
+            render: function (data, type, row) {
+              return `<span class="text-xs text-gray-600">${data}</span>`;
+            },
+          },
+          {
+            data: null,
+            render: function (data, type, row) {
+              return `<span class="px-1.5 py-0.5 bg-red-50 text-red-700 rounded text-xs font-medium">Invalid</span>`;
+            },
+          },
         ],
+        order: [[0, "asc"]],
+        responsive: true,
+        language: {
+          emptyTable:
+            '<div class="flex flex-col items-center justify-center py-8"><i class="fas fa-check-circle text-green-500 text-3xl mb-3"></i><p class="text-gray-500 text-sm">No validation errors found</p></div>',
+          info: "Showing _START_ to _END_ of _TOTAL_ entries",
+          infoEmpty: "",
+          infoFiltered: "(filtered from _MAX_ total entries)",
+          lengthMenu: "Show _MENU_ entries",
+          search: "",
+          zeroRecords:
+            '<div class="flex flex-col items-center justify-center py-8"><i class="fas fa-search text-gray-400 text-3xl mb-3"></i><p class="text-gray-500 text-sm">No matching records found</p></div>',
+        },
+        drawCallback: function () {
+          // Add alternating row colors
+          $("tbody tr:even").addClass("bg-gray-50");
+          $("tbody tr:odd").removeClass("bg-gray-50");
+
+          // Add hover effect
+          $("tbody tr").hover(
+            function () {
+              $(this).addClass("bg-blue-50");
+            },
+            function () {
+              $(this).removeClass("bg-blue-50");
+            }
+          );
+
+          // Pagination styling
+          $(".dataTables_paginate").addClass("flex items-center space-x-1");
+          $(".paginate_button").addClass(
+            "px-2 py-1 text-xs border border-gray-200 rounded hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          );
+          $(".paginate_button.current").addClass(
+            "bg-blue-50 text-blue-700 border-blue-200"
+          );
+          $(".paginate_button.disabled").addClass(
+            "opacity-50 cursor-not-allowed"
+          );
+        },
+      });
+
+      // Custom search input
+      $("#searchInput").on("keyup", function () {
+        errorTable.search(this.value).draw();
+      });
+
+      // Custom page length selector
+      $("#pageLength").on("change", function () {
+        errorTable.page.len(this.value).draw();
       });
 
       // Store rulebook data
@@ -636,6 +778,9 @@
             // Now proceed with validation
             return fetch(`/rulebooks/rulebook/${rulebookId}/validate`, {
               method: "POST",
+              headers: {
+                Accept: "application/json",
+              },
               body: formData,
             });
           })
@@ -673,19 +818,24 @@
           throw new Error("Invalid response format");
         }
 
-        const totalTransactions = data.total_transactions || 0;
-        const violations = data.violations || [];
-        const validTransactions = totalTransactions - violations.length;
+        // Extract data from the new response format
+        const responseData = data.data;
+        if (!responseData) {
+          throw new Error("Missing data in response");
+        }
+
+        const totalTransactions = responseData.total_transactions || 0;
+        const validTransactions = responseData.valid_transactions || 0;
+        const invalidTransactions = responseData.invalid_transactions || 0;
+        const violations = responseData.violations || [];
 
         // Update statistics
         document.getElementById("totalRecords").textContent = totalTransactions;
         document.getElementById("validRecords").textContent = validTransactions;
         document.getElementById("invalidRecords").textContent =
-          violations.length;
+          invalidTransactions;
         document.getElementById("validationRate").textContent =
-          totalTransactions > 0
-            ? `${((validTransactions / totalTransactions) * 100).toFixed(1)}%`
-            : "0%";
+          responseData.validation_rate || "0%";
 
         // Update error table
         errorTable.clear();
@@ -711,7 +861,7 @@
 
         // Update charts
         updateErrorDistributionChart(violations);
-        updateValidationResultsChart(validTransactions, violations.length);
+        updateValidationResultsChart(validTransactions, invalidTransactions);
       }
 
       function updateErrorDistributionChart(violations) {
