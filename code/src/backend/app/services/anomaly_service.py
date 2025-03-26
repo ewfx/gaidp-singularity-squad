@@ -51,4 +51,4 @@ class AnomalyService:
         
         print("Anomaly Detection Summary:")
         print(f"IsolationForest flagged {iso_anomaly_pct:.2f}% of records as anomalies.")
-        return df['anomaly_label'].to_list()
+        return df
