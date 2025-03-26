@@ -5,7 +5,8 @@ from .config import Config
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    
+    app.config['SWAGGER_UI_DOC_EXPANSION'] = 'list'
+
     # Create API with custom configuration
     api = Api(
         title='Regulatory Compliance API',
