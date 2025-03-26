@@ -266,6 +266,12 @@ docker-compose up --build
 http://localhost:5001
 ```
 
+### API Docs
+##### For API Testing, go to:
+```bash
+http://localhost:5001/docs
+```
+
 
 ## Tech Stack
 
@@ -293,9 +299,9 @@ http://localhost:5001
 
 ## Team
 
-- **Your Name** – [GitHub](https://github.com/your-username) | [LinkedIn](https://linkedin.com/in/your-name)
-- **Teammate 1** – [GitHub](https://github.com/teammate1) | [LinkedIn](https://linkedin.com/in/teammate1)
-- **Teammate 2** – [GitHub](https://github.com/teammate2) | [LinkedIn](https://linkedin.com/in/teammate2)
+- **Ayush Addhyayan** – [GitHub](https://github.com/Ayush-projects) | [LinkedIn](https://www.linkedin.com/in/connectayush/)
+- **Avirup Bhattacharyya** – [GitHub](https://github.com/AvirupBh) | [LinkedIn](https://linkedin.com/in/teammate1)
+- **Abhiram Bhimavarapu** – [GitHub](https://github.com/Abhirambvss) | [LinkedIn](https://www.linkedin.com/in/abhiram-bhimavarapu/?originalSubdomain=in)
 
 
 # Sample Dataset
