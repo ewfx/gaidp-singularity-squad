@@ -1,6 +1,7 @@
 # RuleSense: Gen AI-powered Data Profiling for Regulatory Reporting
 
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Demo](#demo)
 - [Inspiration](#inspiration)
@@ -109,3 +110,4 @@ python app.py
 
 # (Optional) Start the Streamlit frontend
 streamlit run frontend.py
+```
