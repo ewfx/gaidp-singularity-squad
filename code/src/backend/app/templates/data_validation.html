@@ -9,6 +9,24 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/1.11.5/css/dataTables.tailwind.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/1.11.5/js/dataTables.tailwind.min.js"
+    ></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
@@ -89,6 +107,47 @@
           width: calc(100% - 4rem);
         }
       }
+
+      .upload-section {
+        position: absolute;
+        top: 1rem;
+        right: 1.5rem;
+        z-index: 10;
+      }
+
+      .chart-container {
+        height: 300px;
+        min-height: 300px;
+        max-height: 300px;
+      }
+
+      .loader {
+        border: 3px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 3px solid #3b82f6;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        display: none;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-card {
+        transition: all 0.3s ease;
+      }
+
+      .error-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
   <body class="bg-gray-50">
@@ -124,6 +183,7 @@
               <i class="fas fa-check-circle w-6"></i>
               <span>Data Validation</span>
             </a>
+
             <a
               href="/anomaly-detection"
               class="nav-link flex items-center px-4 py-3 text-gray-300 rounded-lg"
@@ -159,11 +219,17 @@
                 </h1>
                 <span
                   class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                  >Development</span
                 >
-                  Development
-                </span>
               </div>
               <div class="flex items-center space-x-4">
+                <button
+                  id="uploadBtn"
+                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center"
+                >
+                  <i class="fas fa-upload mr-2"></i>
+                  Upload Data
+                </button>
                 <button class="text-gray-500 hover:text-gray-700">
                   <i class="fas fa-bell text-xl"></i>
                 </button>
@@ -176,17 +242,543 @@
 
           <!-- Main Content Area -->
           <div class="p-6">
+            <!-- Statistics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div class="bg-white rounded-lg shadow p-6 error-card">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Total Records
+                  </h3>
+                  <i class="fas fa-database text-blue-500 text-xl"></i>
+                </div>
+                <div
+                  class="text-3xl font-bold text-gray-900 mb-2"
+                  id="totalRecords"
+                >
+                  -
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                  <i class="fas fa-chart-line mr-2"></i>
+                  <span>Total rows processed</span>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6 error-card">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Valid Records
+                  </h3>
+                  <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                </div>
+                <div
+                  class="text-3xl font-bold text-gray-900 mb-2"
+                  id="validRecords"
+                >
+                  -
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                  <i class="fas fa-check mr-2"></i>
+                  <span>Passed validation</span>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6 error-card">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Invalid Records
+                  </h3>
+                  <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                </div>
+                <div
+                  class="text-3xl font-bold text-gray-900 mb-2"
+                  id="invalidRecords"
+                >
+                  -
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                  <i class="fas fa-exclamation-circle mr-2"></i>
+                  <span>Failed validation</span>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6 error-card">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Validation Rate
+                  </h3>
+                  <i class="fas fa-percentage text-yellow-500 text-xl"></i>
+                </div>
+                <div
+                  class="text-3xl font-bold text-gray-900 mb-2"
+                  id="validationRate"
+                >
+                  -
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                  <i class="fas fa-chart-pie mr-2"></i>
+                  <span>Success rate</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visualization Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  Error Distribution by Column
+                </h3>
+                <div id="errorDistributionChart" class="h-64"></div>
+              </div>
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  Validation Results Distribution
+                </h3>
+                <div id="validationResultsChart" class="h-64"></div>
+              </div>
+            </div>
+
+            <!-- Error Details Table -->
             <div class="bg-white rounded-lg shadow p-6">
-              <h2 class="text-xl font-semibold mb-4">
-                Data Validation Dashboard
-              </h2>
-              <p class="text-gray-600">
-                Content for the Data Validation page will be added here.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Validation Error Details
+              </h3>
+              <table id="errorTable" class="w-full">
+                <thead>
+                  <tr>
+                    <th>Row</th>
+                    <th>Column</th>
+                    <th>Value</th>
+                    <th>Expected Pattern</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Upload Modal -->
+    <div
+      id="uploadModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+    >
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">
+            Upload Data for Validation
+          </h3>
+          <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Select Rulebook</label
+            >
+            <select
+              id="rulebook"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Loading rulebooks...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Upload CSV File</label
+            >
+            <div id="dropZone" class="w-full">
+              <div class="flex items-center justify-center w-full">
+                <label
+                  class="w-full flex flex-col items-center px-4 py-6 bg-white rounded-lg border-2 border-gray-300 border-dashed cursor-pointer hover:border-blue-500 transition-colors duration-200"
+                >
+                  <div
+                    class="flex flex-col items-center justify-center pt-5 pb-6"
+                  >
+                    <i
+                      class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"
+                    ></i>
+                    <p class="mb-2 text-sm text-gray-500">
+                      <span class="font-semibold">Click to upload</span> or drag
+                      and drop
+                    </p>
+                    <p class="text-xs text-gray-500">CSV files only</p>
+                  </div>
+                  <input
+                    id="fileInput"
+                    type="file"
+                    class="hidden"
+                    accept=".csv"
+                  />
+                </label>
+              </div>
+              <div id="filePreview" class="mt-4 hidden">
+                <div
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div
+                      class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
+                    >
+                      <i class="fas fa-file-csv text-blue-600"></i>
+                    </div>
+                    <div>
+                      <p
+                        id="fileName"
+                        class="text-sm font-medium text-gray-900"
+                      ></p>
+                      <p id="fileSize" class="text-xs text-gray-500"></p>
+                    </div>
+                  </div>
+                  <button
+                    id="removeFile"
+                    class="text-gray-400 hover:text-red-500"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="uploadStatus" class="hidden">
+            <div class="flex items-center justify-between mb-2">
+              <span id="validationMessage" class="text-sm text-gray-600"
+                >Processing...</span
+              >
+              <span id="validationLoader" class="animate-spin">
+                <i class="fas fa-spinner"></i>
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                id="progressBar"
+                class="bg-blue-600 h-2.5 rounded-full"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <button
+              id="validateBtn"
+              class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              disabled
+            >
+              Validate Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Initialize DataTable
+      let errorTable = $("#errorTable").DataTable({
+        pageLength: 10,
+        dom: '<"flex justify-between items-center mb-4"<"flex items-center"l><"flex"f>><"my-4"rt><"flex justify-between"<"flex items-center"i><"flex items-center"p>>',
+        columns: [
+          { data: "row_index" },
+          { data: "column" },
+          { data: "value" },
+          { data: "expected_pattern" },
+          { data: "description" },
+        ],
+      });
+
+      // Store rulebook data
+      let currentRulebook = null;
+
+      // Modal handling
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadModal = document.getElementById("uploadModal");
+      const closeModal = document.getElementById("closeModal");
+      const fileInput = document.getElementById("fileInput");
+      const validateBtn = document.getElementById("validateBtn");
+      const rulebookSelect = document.getElementById("rulebook");
+
+      uploadBtn.addEventListener("click", () => {
+        uploadModal.classList.remove("hidden");
+        uploadModal.classList.add("flex");
+        loadRulebooks();
+      });
+
+      closeModal.addEventListener("click", () => {
+        uploadModal.classList.add("hidden");
+        uploadModal.classList.remove("flex");
+        resetForm();
+      });
+
+      // Load Rulebooks
+      function loadRulebooks() {
+        fetch("/rulebooks/rulebooks")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              rulebookSelect.innerHTML =
+                '<option value="">Select a rulebook</option>' +
+                data.data
+                  .filter((book) => book.status === "COMPLETED") // Only show completed rulebooks
+                  .map(
+                    (book) =>
+                      `<option value="${book.uuid}">${book.rulebook_name}</option>`
+                  )
+                  .join("");
+            }
+          })
+          .catch((error) => console.error("Error loading rulebooks:", error));
+      }
+
+      // File Input Handling
+      const dropZone = document.getElementById("dropZone");
+      const filePreview = document.getElementById("filePreview");
+      const fileName = document.getElementById("fileName");
+      const fileSize = document.getElementById("fileSize");
+      const removeFile = document.getElementById("removeFile");
+
+      fileInput.addEventListener("change", handleFileSelect);
+      removeFile.addEventListener("click", () => {
+        fileInput.value = "";
+        filePreview.classList.add("hidden");
+        updateValidateButton();
+      });
+
+      function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.type !== "text/csv") {
+            alert("Please select a CSV file");
+            fileInput.value = "";
+            return;
+          }
+          updateFilePreview(file);
+        }
+      }
+
+      function updateFilePreview(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = `${(file.size / 1024).toFixed(2)} KB`;
+        filePreview.classList.remove("hidden");
+        updateValidateButton();
+      }
+
+      // Drag and drop handling
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight(e) {
+        dropZone.classList.add("border-blue-500", "border-2");
+      }
+
+      function unhighlight(e) {
+        dropZone.classList.remove("border-blue-500", "border-2");
+      }
+
+      dropZone.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+          const file = files[0];
+          if (file.type !== "text/csv") {
+            alert("Please select a CSV file");
+            return;
+          }
+          fileInput.files = files;
+          updateFilePreview(file);
+        }
+      }
+
+      function updateValidateButton() {
+        validateBtn.disabled = !fileInput.files.length || !rulebookSelect.value;
+      }
+
+      // Validation Process
+      validateBtn.addEventListener("click", () => {
+        const file = fileInput.files[0];
+        const rulebookId = rulebookSelect.value;
+
+        if (!file || !rulebookId) return;
+
+        const formData = new FormData();
+        formData.append("csv_file", file);
+
+        // Show validation status
+        document.getElementById("uploadStatus").classList.remove("hidden");
+        document.getElementById("validationLoader").style.display =
+          "inline-block";
+        document.getElementById("validationMessage").textContent =
+          "Validating data...";
+        document.getElementById("progressBar").style.width = "0%";
+
+        // First get the rulebook details to access rules
+        fetch(`/rulebooks/rulebook/${rulebookId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            // The response is the rulebook data directly, not wrapped in status/data
+            currentRulebook = data;
+            // Now proceed with validation
+            return fetch(`/rulebooks/rulebook/${rulebookId}/validate`, {
+              method: "POST",
+              body: formData,
+            });
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) throw new Error(data.error);
+
+            updateDashboard(data);
+            document.getElementById("validationLoader").style.display = "none";
+            document.getElementById("validationMessage").textContent =
+              "Validation complete!";
+            document.getElementById("progressBar").style.width = "100%";
+
+            // Close modal after successful validation
+            setTimeout(() => {
+              uploadModal.classList.add("hidden");
+              uploadModal.classList.remove("flex");
+              resetForm();
+            }, 1500);
+          })
+          .catch((error) => {
+            document.getElementById("validationLoader").style.display = "none";
+            document.getElementById(
+              "validationMessage"
+            ).textContent = `Error: ${error.message}`;
+            document
+              .getElementById("validationMessage")
+              .classList.add("text-red-600");
+          });
+      });
+
+      function updateDashboard(data) {
+        // Check if data has the required structure
+        if (!data || typeof data !== "object") {
+          throw new Error("Invalid response format");
+        }
+
+        const totalTransactions = data.total_transactions || 0;
+        const violations = data.violations || [];
+        const validTransactions = totalTransactions - violations.length;
+
+        // Update statistics
+        document.getElementById("totalRecords").textContent = totalTransactions;
+        document.getElementById("validRecords").textContent = validTransactions;
+        document.getElementById("invalidRecords").textContent =
+          violations.length;
+        document.getElementById("validationRate").textContent =
+          totalTransactions > 0
+            ? `${((validTransactions / totalTransactions) * 100).toFixed(1)}%`
+            : "0%";
+
+        // Update error table
+        errorTable.clear();
+        violations.forEach((violation) => {
+          if (!violation || !violation.rule_id) return;
+
+          // Find the matching rule from the rulebook
+          const rule = currentRulebook?.rules?.find(
+            (r) => r.column_name === violation.rule_id
+          );
+
+          errorTable.row.add({
+            row_index: violation.row_index || "N/A",
+            column: violation.rule_id,
+            value: violation.row_data?.[violation.rule_id] || "N/A",
+            expected_pattern: rule
+              ? rule.regex_pattern.replace(/^r"|"$/g, "")
+              : "N/A",
+            description: rule ? rule.description : "N/A",
+          });
+        });
+        errorTable.draw();
+
+        // Update charts
+        updateErrorDistributionChart(violations);
+        updateValidationResultsChart(validTransactions, violations.length);
+      }
+
+      function updateErrorDistributionChart(violations) {
+        if (!Array.isArray(violations)) return;
+
+        const columnErrors = {};
+        violations.forEach((violation) => {
+          if (!violation?.rule_id) return;
+          if (!columnErrors[violation.rule_id]) {
+            columnErrors[violation.rule_id] = 0;
+          }
+          columnErrors[violation.rule_id]++;
+        });
+
+        const data = [
+          {
+            values: Object.values(columnErrors),
+            labels: Object.keys(columnErrors),
+            type: "pie",
+            hole: 0.4,
+          },
+        ];
+
+        const layout = {
+          margin: { t: 0, b: 0, l: 0, r: 0 },
+          showlegend: true,
+          legend: { orientation: "h", y: -0.2 },
+        };
+
+        Plotly.newPlot("errorDistributionChart", data, layout);
+      }
+
+      function updateValidationResultsChart(valid, invalid) {
+        const data = [
+          {
+            values: [valid, invalid],
+            labels: ["Valid", "Invalid"],
+            type: "pie",
+            hole: 0.4,
+            marker: {
+              colors: ["#10B981", "#EF4444"],
+            },
+          },
+        ];
+
+        const layout = {
+          margin: { t: 0, b: 0, l: 0, r: 0 },
+          showlegend: true,
+          legend: { orientation: "h", y: -0.2 },
+        };
+
+        Plotly.newPlot("validationResultsChart", data, layout);
+      }
+
+      function resetForm() {
+        fileInput.value = "";
+        rulebookSelect.value = "";
+        validateBtn.disabled = true;
+        filePreview.classList.add("hidden");
+        document.getElementById("uploadStatus").classList.add("hidden");
+        document.getElementById("validationMessage").textContent =
+          "Processing...";
+        document
+          .getElementById("validationMessage")
+          .classList.remove("text-red-600");
+        document.getElementById("progressBar").style.width = "0%";
+      }
+    </script>
   </body>
 </html>

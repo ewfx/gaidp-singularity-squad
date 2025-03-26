@@ -800,73 +800,59 @@
         const formData = new FormData();
         formData.append("transactions", file);
 
-        fetch("http://localhost:5001/anomalies/get-anomalies", {
+        fetch("/anomalies/get-anomalies", {
           method: "POST",
           body: formData,
         })
-          .then((response) => response.json())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then((data) => {
+            if (data.error) {
+              throw new Error(data.error);
+            }
             uploadLoader.style.display = "none";
             uploadMessage.textContent = "File processed successfully!";
-            updateDashboard(data);
-            closeUploadModal();
+            setTimeout(() => {
+              updateDashboard(data);
+              closeUploadModal();
+            }, 1000);
           })
           .catch((error) => {
             uploadLoader.style.display = "none";
-            uploadMessage.textContent =
-              "Error processing file. Please try again.";
+            uploadMessage.textContent = `Error: ${error.message}. Please try again.`;
+            uploadMessage.style.color = "#dc2626";
             console.error("Error:", error);
           });
       }
 
       function updateDashboard(data) {
-        const anomalies = JSON.parse(data);
-        updateStatistics(anomalies);
-        updateVisualizations(anomalies);
-        updateDataTable(anomalies);
+        const responseData = data.data;
+        updateStatistics(responseData.statistics);
+        updateVisualizations(responseData);
+        updateDataTable(responseData.transactions);
       }
 
-      function updateStatistics(anomalies) {
-        const totalCount = anomalies.length;
-        const anomalyCount = anomalies.filter((x) => x === 1).length;
-        const detectionRate = ((anomalyCount / totalCount) * 100).toFixed(2);
-        const now = new Date().toLocaleTimeString();
-
-        document.getElementById("totalRecords").textContent = totalCount;
-        document.getElementById("anomalyCount").textContent = anomalyCount;
+      function updateStatistics(stats) {
+        document.getElementById("totalRecords").textContent =
+          stats.total_records;
+        document.getElementById("anomalyCount").textContent =
+          stats.anomaly_count;
         document.getElementById(
           "detectionRate"
-        ).textContent = `${detectionRate}%`;
-        document.getElementById("lastUpdated").textContent = now;
+        ).textContent = `${stats.detection_rate.toFixed(2)}%`;
+        document.getElementById("lastUpdated").textContent = stats.last_updated;
       }
 
-      function updateVisualizations(anomalies) {
-        // Time Series Plot - Changed to an area chart with gradient
-        const timeData = [];
-        const normalCount = [];
-        const anomalyCount = [];
-
-        // Group data by 5-minute intervals for more granular view
-        const interval = 5;
-        for (let i = 0; i < anomalies.length; i += interval) {
-          const slice = anomalies.slice(i, i + interval);
-          const normal = slice.filter((x) => x === 0).length;
-          const anomaly = slice.filter((x) => x === 1).length;
-
-          let date = new Date();
-          date.setMinutes(
-            date.getMinutes() - ((anomalies.length - i) / interval) * 5
-          );
-
-          timeData.push(date);
-          normalCount.push(normal);
-          anomalyCount.push(anomaly);
-        }
-
+      function updateVisualizations(data) {
+        // Time Series Plot
         const timeSeriesData = [
           {
-            x: timeData,
-            y: normalCount,
+            x: data.time_series.timestamps,
+            y: data.time_series.normal_count,
             name: "Normal Transactions",
             type: "scatter",
             mode: "lines",
@@ -879,8 +865,8 @@
             fillcolor: "rgba(96, 165, 250, 0.1)",
           },
           {
-            x: timeData,
-            y: anomalyCount,
+            x: data.time_series.timestamps,
+            y: data.time_series.anomaly_count,
             name: "Anomalous Transactions",
             type: "scatter",
             mode: "lines+markers",
@@ -905,7 +891,7 @@
         const timeSeriesLayout = {
           margin: { t: 20, r: 20, b: 40, l: 40 },
           xaxis: {
-            title: "Time (5-minute intervals)",
+            title: "Time",
             type: "date",
             tickformat: "%H:%M",
             showgrid: true,
@@ -930,24 +916,98 @@
           hovermode: "x unified",
         };
 
-        // Pattern Analysis - Changed to a dual-axis line chart
-        const trendData = [];
-        const cumulativeAnomalies = [];
-        let cumulative = 0;
+        // Regional Distribution Plot
+        const regionalPlotData = [
+          {
+            x: data.regional_distribution.regions,
+            y: data.regional_distribution.total_transactions,
+            name: "Total Transactions",
+            type: "bar",
+            marker: {
+              color: "#3b82f6",
+            },
+          },
+          {
+            x: data.regional_distribution.regions,
+            y: data.regional_distribution.anomalies,
+            name: "Anomalies",
+            type: "bar",
+            marker: {
+              color: "#ef4444",
+            },
+          },
+        ];
 
-        for (let i = 0; i < timeData.length; i++) {
-          const anomalyRate =
-            (anomalyCount[i] / (normalCount[i] + anomalyCount[i])) * 100;
-          trendData.push(anomalyRate);
+        const regionalLayout = {
+          margin: { t: 20, r: 20, b: 40, l: 40 },
+          barmode: "group",
+          xaxis: {
+            title: "Region",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+          },
+          yaxis: {
+            title: "Number of Transactions",
+            showgrid: true,
+            gridcolor: "#e5e7eb",
+          },
+          showlegend: true,
+          legend: {
+            x: 0,
+            y: 1.1,
+            orientation: "h",
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+        };
 
-          cumulative += anomalyCount[i];
-          cumulativeAnomalies.push(cumulative);
-        }
+        // Transaction Type Plot
+        const transactionTypePlotData = [
+          {
+            values: data.transaction_types.normal_count,
+            labels: data.transaction_types.types,
+            type: "pie",
+            hole: 0.4,
+            marker: {
+              colors: ["#3b82f6", "#34d399", "#f59e0b", "#8b5cf6"],
+            },
+            textinfo: "label+percent",
+            textposition: "outside",
+            automargin: true,
+          },
+        ];
+
+        const transactionTypeLayout = {
+          margin: { t: 20, r: 20, b: 20, l: 20 },
+          showlegend: false,
+          annotations: [
+            {
+              font: { size: 14 },
+              showarrow: false,
+              text: "Transaction Types",
+              x: 0.5,
+              y: 0.5,
+            },
+          ],
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+        };
+
+        // Pattern Analysis Plot (using cumulative anomalies)
+        let cumulativeAnomalies = data.time_series.anomaly_count.reduce(
+          (acc, val, i) => {
+            if (i === 0) return [val];
+            return [...acc, acc[i - 1] + val];
+          },
+          []
+        );
 
         const patternData = [
           {
-            x: timeData,
-            y: trendData,
+            x: data.time_series.timestamps,
+            y: data.time_series.anomaly_count.map(
+              (val, i) => (val / (val + data.time_series.normal_count[i])) * 100
+            ),
             name: "Anomaly Rate",
             type: "scatter",
             mode: "lines",
@@ -959,7 +1019,7 @@
             yaxis: "y",
           },
           {
-            x: timeData,
+            x: data.time_series.timestamps,
             y: cumulativeAnomalies,
             name: "Cumulative Anomalies",
             type: "scatter",
@@ -1009,63 +1069,6 @@
           hovermode: "x unified",
         };
 
-        // Regional Distribution Data
-        const regions = ["North", "South", "East", "West", "Central"];
-        const regionalData = regions.map((region) => ({
-          region,
-          total: Math.floor(Math.random() * 100),
-          anomalies: Math.floor(Math.random() * 30),
-        }));
-
-        const regionalPlotData = [
-          {
-            x: regions,
-            y: regionalData.map((d) => d.total),
-            name: "Total Transactions",
-            type: "bar",
-            marker: {
-              color: "#3b82f6",
-            },
-          },
-          {
-            x: regions,
-            y: regionalData.map((d) => d.anomalies),
-            name: "Anomalies",
-            type: "bar",
-            marker: {
-              color: "#ef4444",
-            },
-          },
-        ];
-
-        // Transaction Type Data
-        const transactionTypes = [
-          "Payment",
-          "Transfer",
-          "Withdrawal",
-          "Deposit",
-        ];
-        const typeData = transactionTypes.map((type) => ({
-          type,
-          normal: Math.floor(Math.random() * 100),
-          anomaly: Math.floor(Math.random() * 20),
-        }));
-
-        const transactionTypePlotData = [
-          {
-            values: typeData.map((d) => d.normal + d.anomaly),
-            labels: transactionTypes,
-            type: "pie",
-            hole: 0.4,
-            marker: {
-              colors: ["#3b82f6", "#34d399", "#f59e0b", "#8b5cf6"],
-            },
-            textinfo: "label+percent",
-            textposition: "outside",
-            automargin: true,
-          },
-        ];
-
         const config = {
           responsive: true,
           displayModeBar: false,
@@ -1079,126 +1082,23 @@
           config
         );
         Plotly.newPlot("patternPlot", patternData, patternLayout, config);
-
-        const regionalLayout = {
-          margin: { t: 20, r: 20, b: 40, l: 40 },
-          barmode: "group",
-          xaxis: {
-            title: "Region",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-          },
-          yaxis: {
-            title: "Number of Transactions",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-          },
-          showlegend: true,
-          legend: {
-            x: 0,
-            y: 1.1,
-            orientation: "h",
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-        };
         Plotly.newPlot(
           "regionalPlot",
           regionalPlotData,
           regionalLayout,
           config
         );
-
-        const transactionTypeLayout = {
-          margin: { t: 20, r: 20, b: 20, l: 20 },
-          showlegend: false,
-          annotations: [
-            {
-              font: { size: 14 },
-              showarrow: false,
-              text: "Transaction Types",
-              x: 0.5,
-              y: 0.5,
-            },
-          ],
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-        };
         Plotly.newPlot(
           "transactionTypePlot",
           transactionTypePlotData,
           transactionTypeLayout,
           config
         );
-
-        // Add resize handlers
-        window.addEventListener("resize", function () {
-          Plotly.Plots.resize("timeSeriesPlot");
-          Plotly.Plots.resize("patternPlot");
-          Plotly.Plots.resize("regionalPlot");
-          Plotly.Plots.resize("transactionTypePlot");
-        });
       }
 
-      function updateDataTable(anomalies) {
-        const regions = ["North", "South", "East", "West", "Central"];
-        const tableData = anomalies.map((value, index) => ({
-          id: `TXN-${(index + 1).toString().padStart(6, "0")}`,
-          timestamp: new Date(
-            Date.now() - Math.random() * 86400000
-          ).toLocaleString(),
-          type: ["Payment", "Transfer", "Withdrawal", "Deposit"][
-            Math.floor(Math.random() * 4)
-          ],
-          amount: `$${(Math.random() * 10000).toFixed(2)}`,
-          region: regions[Math.floor(Math.random() * regions.length)],
-          risk_score:
-            value === 1
-              ? (Math.random() * 0.5 + 0.5).toFixed(2)
-              : (Math.random() * 0.3).toFixed(2),
-          status: value === 1 ? "Anomaly" : "Normal",
-          actions: `<button class="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600" onclick="viewDetails('${index}')">View Details</button>`,
-          // Additional details for modal
-          ip_address: `${Math.floor(Math.random() * 256)}.${Math.floor(
-            Math.random() * 256
-          )}.${Math.floor(Math.random() * 256)}.${Math.floor(
-            Math.random() * 256
-          )}`,
-          user_agent:
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          device_id: `DEV-${Math.random()
-            .toString(36)
-            .substr(2, 9)
-            .toUpperCase()}`,
-          merchant: `Merchant-${Math.floor(Math.random() * 100)}`,
-          currency: "USD",
-          transaction_method: [
-            "Credit Card",
-            "Debit Card",
-            "Bank Transfer",
-            "Digital Wallet",
-          ][Math.floor(Math.random() * 4)],
-          customer_id: `CUST-${Math.random()
-            .toString(36)
-            .substr(2, 9)
-            .toUpperCase()}`,
-          customer_since: new Date(
-            Date.now() - Math.random() * 31536000000
-          ).toLocaleDateString(),
-          previous_transactions: Math.floor(Math.random() * 100),
-          anomaly_factors:
-            value === 1
-              ? [
-                  "Unusual transaction amount",
-                  "Suspicious IP address",
-                  "Multiple transactions in short time",
-                  "Different region than usual",
-                ].slice(0, Math.floor(Math.random() * 3) + 1)
-              : [],
-        }));
-
+      function updateDataTable(transactions) {
         anomalyTable.clear();
-        anomalyTable.rows.add(tableData);
+        anomalyTable.rows.add(transactions);
         anomalyTable.draw();
       }
 

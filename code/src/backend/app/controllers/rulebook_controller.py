@@ -210,12 +210,39 @@ class RulebookList(Resource):
             200: 'List of all rulebooks retrieved successfully'
         }
     )
-    @api.marshal_list_with(rulebook_model)
     def get(self):
         """List all uploaded rulebooks"""
         try:
             rulebooks = rulebook_service.get_all_rulebooks()
-            return rulebooks
+            # Convert datetime fields to ISO format strings
+            for rulebook in rulebooks:
+                if isinstance(rulebook, dict):
+                    if 'created_at' in rulebook:
+                        try:
+                            if isinstance(rulebook['created_at'], str):
+                                # If it's already a string, try to parse it to datetime
+                                rulebook['created_at'] = datetime.fromisoformat(rulebook['created_at'].replace('Z', '+00:00'))
+                            rulebook['created_at'] = rulebook['created_at'].isoformat()
+                        except (ValueError, AttributeError):
+                            # If there's any issue with the datetime, remove the field
+                            del rulebook['created_at']
+                else:
+                    # If rulebook is an object with to_dict method
+                    rulebook_dict = rulebook.to_dict()
+                    if 'created_at' in rulebook_dict:
+                        try:
+                            if isinstance(rulebook_dict['created_at'], str):
+                                rulebook_dict['created_at'] = datetime.fromisoformat(rulebook_dict['created_at'].replace('Z', '+00:00'))
+                            rulebook_dict['created_at'] = rulebook_dict['created_at'].isoformat()
+                        except (ValueError, AttributeError):
+                            del rulebook_dict['created_at']
+                    rulebook = rulebook_dict
+
+            # Return the response without marshalling
+            return {
+                'status': 'success',
+                'data': rulebooks
+            }
         except Exception as e:
             api.abort(500, message=str(e))
 

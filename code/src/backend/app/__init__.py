@@ -52,17 +52,17 @@ def create_app():
     from .controllers.rulebook_controller import api as rulebook_ns
     from .controllers.dashboard_controller import dashboard_bp
     from .controllers.anomaly_controller import api as anomaly_ns, anomaly_bp
-    from .controllers.data_validation_controller import api as data_validation_ns, data_validation_bp
+    from .controllers.validation_controller import validation_bp, api as validation_api
 
     # Register REST API namespaces
     api.add_namespace(rulebook_ns)
     api.add_namespace(anomaly_ns)
-    api.add_namespace(data_validation_ns)
+    api.add_namespace(validation_api)
 
     # Register template rendering blueprints
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(anomaly_bp)
-    app.register_blueprint(data_validation_bp)
+    app.register_blueprint(validation_bp)
     
     # Initialize API with app
     api.init_app(app)
