@@ -1,3 +1,8 @@
+
+# Project Title
+
+A brief description of what this project does and who it's for
+
 # RuleSense: Gen AI-powered Data Profiling for Regulatory Reporting
 
 ## Table of Contents
@@ -90,7 +95,7 @@ Financial institutions face a major challenge when translating regulatory report
 
 **Frontend**
 
-- Built using Streamlit (or React, if configured) to allow document and CSV uploads, validation display, and anomaly review
+- Built using flask templates to allow document and CSV uploads, validation display, and anomaly review
 
 ---
 
@@ -106,17 +111,51 @@ Financial institutions face a major challenge when translating regulatory report
 
 ## How to Run
 
+#### Clone the repository
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/rulesense.git
-cd rulesense
+git clone [https://github.com/your-username/rulesense.git](https://github.com/ewfx/gaidp-singularity-squad.git)
+cd gaidp-singularity-squad.git
+```
 
-# Install dependencies
-pip install -r requirements.txt
+#### Set up environment variables
+```bash
+cp code/src/backend/.env.example code/src/backend/.env
+```
 
-# Start the Flask backend
-python app.py
+#### Edit .env and update with your Gemini API key:
+```bash
+GOOGLE_API_KEY=your_api_key_here
+FLASK_ENV=development
+FLASK_DEBUG=1
+```
 
-# (Optional) Start the Streamlit frontend
-streamlit run frontend.py
+### Install Docker
+ - Follow official instructions to install Docker and Docker Compose:
+ - macOS/Linux: https://docs.docker.com/desktop/install/mac-install/
+ - Windows: https://docs.docker.com/desktop/install/windows-install/
+
+
+### Verify installation:
+
+```bash
+docker --version
+docker compose version
+```
+
+
+### Build and run the application
+##### macOS/Linux
+```bash
+docker compose up --build
+```
+##### Windows
+
+```bash
+docker-compose up --build
+```
+
+### Open the application
+##### Once the container is running, go to:
+```bash
+http://localhost:5001
 ```
