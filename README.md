@@ -30,14 +30,23 @@ RuleSense is a Gen AI-powered compliance assistant designed to automate regulato
 
 Screenshots:
 
-- Rulebook Generator UI  
+- RuleSense 
   ![Rulebook Generator UI](artifacts/screenshots/homepage.jpeg)
 
-- CSV Validator Results  
-  ![CSV Validator](assets/validation-results.png)
+- GenAI Rulebook Generator
+  ![Rulebook Generator](artifacts/screenshots/rulebook1.jpeg)
 
-- Anomaly Detection View  
-  ![Anomaly Detection](assets/anomaly-detection.png)
+- Regex Based Rulebooks
+  ![Rulebooks](artifacts/screenshots/rulebook2.jpeg)
+  
+- Transactions Data Validator
+  ![Transactions Validator](artifacts/screenshots/anamoly1.peg)
+  
+- Anomaly Detector  
+  ![Anomaly Detector](artifacts/screenshots/anamoly1.peg)
+
+- Anomaly Detector  
+  ![Anomaly Detector](artifacts/screenshots/validator1.peg)
 
 ---
 
