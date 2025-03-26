@@ -17,18 +17,23 @@ This project identifies anomalous corporate loan transactions using **unsupervis
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Script
-    participant Model
-    participant Plot
+    actor User as 👤 User
+    participant Loader as 📂 Data Loader
+    participant Preprocessor as 🔧 Preprocessor
+    participant Model as 🧠 IsolationForest Model
+    participant Analyzer as 📊 Analyzer
+    participant Visualizer as 📈 Visualizer
 
-    User->>Script: Load CorpLoanTransaction.csv
-    Script->>Script: Select numeric features
-    Script->>Script: Drop rows with missing values
-    Script->>Script: Standardize features with StandardScaler
-    Script->>Model: Train IsolationForest (15% contamination)
-    Model-->>Script: Predict anomaly labels (0 = normal, 1 = anomaly)
-    Script->>Script: Compute anomaly percentage
-    Script->>User: Print anomaly summary
-    Script->>Plot: Visualize decision function scores
+    User->>Loader: Load "CorpLoanTransaction.csv"
+    Loader->>Preprocessor: Select numeric columns
+    Preprocessor->>Preprocessor: Drop rows with missing values
+    Preprocessor->>Preprocessor: Scale features using StandardScaler
+
+    Preprocessor->>Model: Train IsolationForest (contamination=0.15)
+    Model-->>Analyzer: Predict labels (0 = normal, 1 = anomaly)
+    Analyzer->>Analyzer: Calculate anomaly percentage
+    Analyzer->>User: Print anomaly summary
+
+    Model->>Visualizer: Get decision_function scores
+    Visualizer->>User: Plot histogram of scores
 ```
