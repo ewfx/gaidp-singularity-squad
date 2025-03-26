@@ -235,7 +235,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
 
-      /* Modal Styles */
+      /* Modal styles */
       .modal {
         display: none;
         position: fixed;
@@ -245,80 +245,148 @@
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
-        overflow-y: auto;
+        backdrop-filter: blur(4px);
       }
 
       .modal-content {
         background-color: #fefefe;
         margin: 2% auto;
-        padding: 20px;
-        border: 1px solid #888;
+        padding: 2rem;
+        border-radius: 0.75rem;
         width: 90%;
-        max-width: 1200px;
-        border-radius: 0.5rem;
+        max-width: 1000px;
+        position: relative;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         max-height: 90vh;
         overflow-y: auto;
       }
 
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        color: #1f2937;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
       .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
+        color: #6b7280;
+        font-size: 1.5rem;
         font-weight: bold;
         cursor: pointer;
+        transition: color 0.2s;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
       }
 
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
+      .close:hover {
+        color: #1f2937;
+        background-color: #f3f4f6;
+      }
+
+      .modal-body {
+        max-height: calc(90vh - 8rem);
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+
+      .transaction-detail {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s;
+      }
+
+      .transaction-detail:hover {
+        background: #f1f5f9;
+        transform: translateX(4px);
+      }
+
+      .transaction-detail label {
+        font-weight: 600;
+        color: #4b5563;
+        font-size: 0.875rem;
+      }
+
+      .transaction-detail span {
+        color: #1f2937;
+        font-size: 0.875rem;
+      }
+
+      .transaction-detail.highlight {
+        background: #eff6ff;
+        border-left: 4px solid #3b82f6;
+      }
+
+      .transaction-detail.warning {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+      }
+
+      .transaction-detail.danger {
+        background: #fee2e2;
+        border-left: 4px solid #ef4444;
+      }
+
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .modal-button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.2s;
         cursor: pointer;
       }
 
-      .detail-row {
-        display: flex;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 1rem 0;
+      .modal-button.primary {
+        background-color: #3b82f6;
+        color: white;
+        border: none;
       }
 
-      .detail-label {
-        width: 200px;
-        font-weight: 600;
+      .modal-button.primary:hover {
+        background-color: #2563eb;
+      }
+
+      .modal-button.secondary {
+        background-color: #f3f4f6;
         color: #4b5563;
+        border: 1px solid #e5e7eb;
       }
 
-      .detail-value {
-        flex: 1;
-        color: #1f2937;
+      .modal-button.secondary:hover {
+        background-color: #e5e7eb;
       }
 
-      .badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-
-      .badge-success {
-        background-color: #dcfce7;
-        color: #166534;
-      }
-
-      .badge-warning {
-        background-color: #fef3c7;
-        color: #92400e;
-      }
-
-      .badge-danger {
-        background-color: #fee2e2;
-        color: #991b1b;
-      }
-
-      @media (max-width: 1024px) {
+      @media (max-width: 768px) {
         .modal-content {
           width: 95%;
           margin: 1% auto;
+          padding: 1rem;
+        }
+
+        .transaction-detail {
+          grid-template-columns: 1fr;
+          gap: 0.5rem;
         }
 
         .chart-container {
@@ -346,6 +414,134 @@
           min-height: 200px;
           max-height: 200px;
         }
+      }
+
+      .data-table-container {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      .data-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .data-table tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      .data-table .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .status-normal {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .status-anomaly {
+        background-color: #ffebee;
+        color: #c62828;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 800px;
+        position: relative;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        color: #333;
+      }
+
+      .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: #333;
+      }
+
+      .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+
+      .transaction-detail {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+      }
+
+      .transaction-detail label {
+        font-weight: 600;
+        color: #495057;
+        margin-right: 10px;
+      }
+
+      .view-details-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .view-details-btn:hover {
+        background-color: #0056b3;
       }
     </style>
   </head>
@@ -398,7 +594,7 @@
               class="w-8 h-8 bg-gray-700 rounded-full"
             />
             <div class="flex-1">
-              <p class="text-sm text-white font-medium">Ayush Addhyayan</p>
+              <p class="text-sm text-white font-medium">Singularity Squad</p>
               <p class="text-xs text-gray-400">Admin</p>
             </div>
           </div>
@@ -466,15 +662,25 @@
                     id="fileInput"
                     class="hidden"
                     accept=".csv"
+                    onchange="handleFileSelect(event)"
                   />
                   <div class="space-y-2">
-                    <i
-                      class="fas fa-cloud-upload-alt text-3xl text-gray-400"
-                    ></i>
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400"></i>
                     <p class="text-sm font-medium text-gray-700">
                       Drag and drop your CSV file here
                     </p>
                     <p class="text-xs text-gray-500">or click to browse</p>
+                  </div>
+                </div>
+                <div id="selectedFile" class="mt-2 hidden">
+                  <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-file-csv text-blue-500"></i>
+                      <span class="text-sm text-gray-700" id="fileName"></span>
+                    </div>
+                    <button onclick="removeSelectedFile()" class="text-gray-500 hover:text-red-500">
+                      <i class="fas fa-times"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -483,6 +689,22 @@
                   <div class="loader" id="uploadLoader"></div>
                   <span id="uploadMessage" class="text-sm text-blue-700"></span>
                 </div>
+              </div>
+              <div class="flex justify-end space-x-3 mt-4">
+                <button
+                  class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  onclick="closeUploadModal()"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="uploadSubmitBtn"
+                  class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onclick="submitFile()"
+                  disabled
+                >
+                  Upload
+                </button>
               </div>
             </div>
           </div>
@@ -604,8 +826,8 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Detailed Anomaly Analysis
             </h3>
-            <div class="overflow-x-auto">
-              <table id="anomalyTable" class="w-full display responsive nowrap">
+            <div class="data-table-container">
+              <table id="anomalyTable" class="data-table">
                 <thead>
                   <tr>
                     <th>Record ID</th>
@@ -618,7 +840,7 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="anomalyTableBody"></tbody>
               </table>
             </div>
           </div>
@@ -629,24 +851,12 @@
     <!-- Transaction Details Modal -->
     <div id="transactionModal" class="modal">
       <div class="modal-content">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Transaction Details</h2>
+        <div class="modal-header">
+          <h2>Transaction Details</h2>
           <span class="close">&times;</span>
         </div>
-        <div id="transactionDetails"></div>
-        <div class="mt-6 flex justify-end space-x-4">
-          <button
-            onclick="exportTransactionDetails()"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            Export Details
-          </button>
-          <button
-            onclick="closeModal()"
-            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-          >
-            Close
-          </button>
+        <div class="modal-body">
+          <div id="transactionDetails"></div>
         </div>
       </div>
     </div>
@@ -678,72 +888,17 @@
       const uploadStatus = document.getElementById("uploadStatus");
       const uploadLoader = document.getElementById("uploadLoader");
       const uploadMessage = document.getElementById("uploadMessage");
+      const selectedFile = document.getElementById("selectedFile");
+      const fileName = document.getElementById("fileName");
+      const uploadSubmitBtn = document.getElementById("uploadSubmitBtn");
+      let selectedFileData = null;
 
-      // Initialize DataTable with enhanced features
-      let anomalyTable = $("#anomalyTable").DataTable({
-        dom: '<"flex justify-between items-center mb-4"<"flex items-center"l><"flex"f>><"my-4"rt><"flex justify-between"<"flex items-center"i><"flex items-center"p>>B',
-        buttons: [
-          {
-            extend: "csv",
-            className:
-              "px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mr-2",
-            text: '<i class="fas fa-download mr-2"></i>Export CSV',
-          },
-          {
-            extend: "excel",
-            className:
-              "px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600",
-            text: '<i class="fas fa-file-excel mr-2"></i>Export Excel',
-          },
-        ],
-        pageLength: 10,
-        responsive: true,
-        order: [[5, "desc"]],
-        columns: [
-          { data: "id" },
-          { data: "timestamp" },
-          { data: "type" },
-          { data: "amount" },
-          { data: "region" },
-          { data: "risk_score" },
-          { data: "status" },
-          { data: "actions" },
-        ],
-        columnDefs: [
-          {
-            targets: -1,
-            orderable: false,
-          },
-          {
-            targets: 6,
-            render: function (data, type, row) {
-              let badgeClass =
-                data === "Anomaly" ? "badge-danger" : "badge-success";
-              return `<span class="badge ${badgeClass}">${data}</span>`;
-            },
-          },
-          {
-            targets: 5,
-            render: function (data, type, row) {
-              let score = parseFloat(data);
-              let color =
-                score > 0.7
-                  ? "text-red-600"
-                  : score > 0.4
-                  ? "text-yellow-600"
-                  : "text-green-600";
-              return `<span class="${color} font-semibold">${data}</span>`;
-            },
-          },
-        ],
-        createdRow: function (row, data, dataIndex) {
-          if (data.status === "Anomaly") {
-            $(row).addClass("anomaly-row");
-          }
-        },
+      // Click handler for drop zone
+      dropZone.addEventListener("click", () => {
+        fileInput.click();
       });
 
-      // File Upload Event Handlers
+      // Drag and drop handlers
       ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
         dropZone.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
@@ -758,8 +913,6 @@
       });
 
       dropZone.addEventListener("drop", handleDrop, false);
-      dropZone.addEventListener("click", () => fileInput.click());
-      fileInput.addEventListener("change", handleFileSelect);
 
       function preventDefaults(e) {
         e.preventDefault();
@@ -792,316 +945,436 @@
           alert("Please upload a CSV file");
           return;
         }
-        uploadFile(file);
+        
+        selectedFileData = file;
+        fileName.textContent = file.name;
+        selectedFile.classList.remove("hidden");
+        uploadSubmitBtn.disabled = false;
+      }
+
+      function removeSelectedFile() {
+        selectedFileData = null;
+        fileName.textContent = "";
+        selectedFile.classList.add("hidden");
+        uploadSubmitBtn.disabled = true;
+        fileInput.value = "";
+      }
+
+      function submitFile() {
+        if (!selectedFileData) return;
+        uploadFile(selectedFileData);
       }
 
       function uploadFile(file) {
         uploadStatus.classList.remove("hidden");
         uploadLoader.style.display = "inline-block";
-        uploadMessage.textContent = "Uploading and processing file...";
+        uploadMessage.textContent = "Uploading file...";
+        uploadMessage.style.color = "#3b82f6";
 
         const formData = new FormData();
         formData.append("transactions", file);
 
-        fetch("/anomalies/get-anomalies", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+        // Show upload progress
+        const progressBar = document.createElement("div");
+        progressBar.className = "w-full bg-gray-200 rounded-full h-2.5 mt-2";
+        progressBar.innerHTML = '<div class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>';
+        uploadStatus.appendChild(progressBar);
+
+        // Simulate upload progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += 5;
+          if (progress <= 90) {
+            progressBar.querySelector("div").style.width = `${progress}%`;
+          }
+        }, 200);
+
+        // Create a new XMLHttpRequest for upload progress
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/anomalies/get-anomalies", true);
+
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 90; // Use 90% for upload
+            progressBar.querySelector("div").style.width = `${percentComplete}%`;
+          }
+        };
+
+        xhr.onload = function() {
+          clearInterval(progressInterval);
+          if (xhr.status === 200) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              if (data.error) {
+                throw new Error(data.error);
+              }
+              progressBar.querySelector("div").style.width = "100%";
+              uploadLoader.style.display = "none";
+              uploadMessage.textContent = "File processed successfully!";
+              uploadMessage.style.color = "#059669";
+              
+              // Add success icon
+              const successIcon = document.createElement("i");
+              successIcon.className = "fas fa-check-circle ml-2 text-green-500";
+              uploadMessage.appendChild(successIcon);
+              
+              setTimeout(() => {
+                updateDashboard(data);
+                closeUploadModal();
+              }, 1000);
+            } catch (error) {
+              throw new Error(error.message || "Error processing file");
             }
-            return response.json();
-          })
-          .then((data) => {
-            if (data.error) {
-              throw new Error(data.error);
-            }
-            uploadLoader.style.display = "none";
-            uploadMessage.textContent = "File processed successfully!";
-            setTimeout(() => {
-              updateDashboard(data);
-              closeUploadModal();
-            }, 1000);
-          })
-          .catch((error) => {
-            uploadLoader.style.display = "none";
-            uploadMessage.textContent = `Error: ${error.message}. Please try again.`;
-            uploadMessage.style.color = "#dc2626";
-            console.error("Error:", error);
-          });
+          } else {
+            throw new Error(`HTTP error! status: ${xhr.status}`);
+          }
+        };
+
+        xhr.onerror = function() {
+          clearInterval(progressInterval);
+          uploadLoader.style.display = "none";
+          uploadMessage.textContent = "Error: Network error occurred. Please try again.";
+          uploadMessage.style.color = "#dc2626";
+          
+          // Add error icon
+          const errorIcon = document.createElement("i");
+          errorIcon.className = "fas fa-exclamation-circle ml-2 text-red-500";
+          uploadMessage.appendChild(errorIcon);
+          
+          console.error("Network error occurred");
+        };
+
+        xhr.send(formData);
       }
 
       function updateDashboard(data) {
-        const responseData = data.data;
-        updateStatistics(responseData.statistics);
-        updateVisualizations(responseData);
-        updateDataTable(responseData.transactions);
+        // Update statistics
+        updateStatistics(data.statistics);
+        
+        // Update visualizations
+        updateVisualizations(data);
+        
+        // Update data table
+        updateDataTable(data.anomalies);
       }
 
       function updateStatistics(stats) {
-        document.getElementById("totalRecords").textContent =
-          stats.total_records;
-        document.getElementById("anomalyCount").textContent =
-          stats.anomaly_count;
-        document.getElementById(
-          "detectionRate"
-        ).textContent = `${stats.detection_rate.toFixed(2)}%`;
+        document.getElementById("totalRecords").textContent = stats.total_records;
+        document.getElementById("anomalyCount").textContent = stats.anomaly_count;
+        document.getElementById("detectionRate").textContent = `${stats.detection_rate.toFixed(2)}%`;
         document.getElementById("lastUpdated").textContent = stats.last_updated;
       }
 
       function updateVisualizations(data) {
         // Time Series Plot
         const timeSeriesData = [
-          {
-            x: data.time_series.timestamps,
-            y: data.time_series.normal_count,
-            name: "Normal Transactions",
-            type: "scatter",
-            mode: "lines",
-            line: {
-              shape: "spline",
-              width: 3,
-              color: "#60a5fa",
+            {
+                x: data.time_series.timestamps,
+                y: data.time_series.normal_count,
+                name: "Normal Transactions",
+                type: "scatter",
+                mode: "lines",
+                line: {
+                    shape: "spline",
+                    width: 3,
+                    color: "#60a5fa",
+                },
+                fill: "tonexty",
+                fillcolor: "rgba(96, 165, 250, 0.1)",
+                hovertemplate: "<b>%{x|%Y-%m-%d}</b><br>" +
+                             "Normal: %{y}<br>" +
+                             "<extra></extra>"
             },
-            fill: "tonexty",
-            fillcolor: "rgba(96, 165, 250, 0.1)",
-          },
-          {
-            x: data.time_series.timestamps,
-            y: data.time_series.anomaly_count,
-            name: "Anomalous Transactions",
-            type: "scatter",
-            mode: "lines+markers",
-            line: {
-              shape: "spline",
-              width: 3,
-              color: "#f87171",
+            {
+                x: data.time_series.timestamps,
+                y: data.time_series.anomaly_count,
+                name: "Anomalous Transactions",
+                type: "scatter",
+                mode: "lines+markers",
+                line: {
+                    shape: "spline",
+                    width: 3,
+                    color: "#f87171",
+                },
+                marker: {
+                    size: 6,
+                    color: "#ef4444",
+                    line: {
+                        color: "#fff",
+                        width: 1,
+                    },
+                },
+                fill: "tonexty",
+                fillcolor: "rgba(248, 113, 113, 0.1)",
+                hovertemplate: "<b>%{x|%Y-%m-%d}</b><br>" +
+                             "Anomalies: %{y}<br>" +
+                             "<extra></extra>"
             },
-            marker: {
-              size: 6,
-              color: "#ef4444",
-              line: {
-                color: "#fff",
-                width: 1,
-              },
-            },
-            fill: "tonexty",
-            fillcolor: "rgba(248, 113, 113, 0.1)",
-          },
         ];
 
         const timeSeriesLayout = {
-          margin: { t: 20, r: 20, b: 40, l: 40 },
-          xaxis: {
-            title: "Time",
-            type: "date",
-            tickformat: "%H:%M",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-            linecolor: "#e5e7eb",
-          },
-          yaxis: {
-            title: "Number of Transactions",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-            linecolor: "#e5e7eb",
-            zeroline: false,
-          },
-          showlegend: true,
-          legend: {
-            x: 0,
-            y: 1.1,
-            orientation: "h",
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-          hovermode: "x unified",
+            margin: { t: 20, r: 20, b: 40, l: 40 },
+            xaxis: {
+                title: "Date",
+                type: "date",
+                tickformat: "%Y-%m-%d",
+                showgrid: true,
+                gridcolor: "#e5e7eb",
+                linecolor: "#e5e7eb",
+                rangeslider: { visible: true },
+                rangeselector: {
+                    buttons: [
+                        { count: 1, label: '1m', step: 'month', stepmode: 'backward' },
+                        { count: 3, label: '3m', step: 'month', stepmode: 'backward' },
+                        { count: 6, label: '6m', step: 'month', stepmode: 'backward' },
+                        { step: 'all', label: 'All' }
+                    ]
+                }
+            },
+            yaxis: {
+                title: "Number of Transactions",
+                showgrid: true,
+                gridcolor: "#e5e7eb",
+                linecolor: "#e5e7eb",
+                zeroline: false,
+            },
+            showlegend: true,
+            legend: {
+                x: 0,
+                y: 1.1,
+                orientation: "h",
+                bgcolor: "rgba(255, 255, 255, 0.8)",
+                bordercolor: "#e5e7eb",
+                borderwidth: 1,
+            },
+            plot_bgcolor: "#ffffff",
+            paper_bgcolor: "#ffffff",
+            hovermode: "x unified",
+            hoverlabel: {
+                bgcolor: "#ffffff",
+                font: { size: 14 },
+                bordercolor: "#e5e7eb",
+            },
         };
 
         // Regional Distribution Plot
         const regionalPlotData = [
-          {
-            x: data.regional_distribution.regions,
-            y: data.regional_distribution.total_transactions,
-            name: "Total Transactions",
-            type: "bar",
-            marker: {
-              color: "#3b82f6",
+            {
+                x: data.regional_distribution.regions,
+                y: data.regional_distribution.total_transactions,
+                name: "Total Transactions",
+                type: "bar",
+                marker: {
+                    color: "#3b82f6",
+                },
+                hovertemplate: "<b>%{x}</b><br>" +
+                             "Total: %{y}<br>" +
+                             "<extra></extra>"
             },
-          },
-          {
-            x: data.regional_distribution.regions,
-            y: data.regional_distribution.anomalies,
-            name: "Anomalies",
-            type: "bar",
-            marker: {
-              color: "#ef4444",
+            {
+                x: data.regional_distribution.regions,
+                y: data.regional_distribution.anomalies,
+                name: "Anomalies",
+                type: "bar",
+                marker: {
+                    color: "#ef4444",
+                },
+                hovertemplate: "<b>%{x}</b><br>" +
+                             "Anomalies: %{y}<br>" +
+                             "<extra></extra>"
             },
-          },
         ];
 
         const regionalLayout = {
-          margin: { t: 20, r: 20, b: 40, l: 40 },
-          barmode: "group",
-          xaxis: {
-            title: "Region",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-          },
-          yaxis: {
-            title: "Number of Transactions",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-          },
-          showlegend: true,
-          legend: {
-            x: 0,
-            y: 1.1,
-            orientation: "h",
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
+            margin: { t: 20, r: 20, b: 40, l: 40 },
+            barmode: "group",
+            xaxis: {
+                title: "Country",
+                showgrid: true,
+                gridcolor: "#e5e7eb",
+                tickangle: -45,
+            },
+            yaxis: {
+                title: "Number of Transactions",
+                showgrid: true,
+                gridcolor: "#e5e7eb",
+            },
+            showlegend: true,
+            legend: {
+                x: 0,
+                y: 1.1,
+                orientation: "h",
+                bgcolor: "rgba(255, 255, 255, 0.8)",
+                bordercolor: "#e5e7eb",
+                borderwidth: 1,
+            },
+            plot_bgcolor: "#ffffff",
+            paper_bgcolor: "#ffffff",
+            hoverlabel: {
+                bgcolor: "#ffffff",
+                font: { size: 14 },
+                bordercolor: "#e5e7eb",
+            },
         };
 
         // Transaction Type Plot
         const transactionTypePlotData = [
-          {
-            values: data.transaction_types.normal_count,
-            labels: data.transaction_types.types,
-            type: "pie",
-            hole: 0.4,
-            marker: {
-              colors: ["#3b82f6", "#34d399", "#f59e0b", "#8b5cf6"],
+            {
+                values: data.transaction_types.normal_count,
+                labels: data.transaction_types.types,
+                type: "pie",
+                hole: 0.4,
+                marker: {
+                    colors: ["#3b82f6", "#34d399", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"],
+                },
+                textinfo: "label+percent",
+                textposition: "outside",
+                textfont: { size: 10 },
+                automargin: true,
+                hovertemplate: "<b>%{label}</b><br>" +
+                             "Count: %{value}<br>" +
+                             "Percentage: %{percent}<br>" +
+                             "<extra></extra>"
             },
-            textinfo: "label+percent",
-            textposition: "outside",
-            automargin: true,
-          },
         ];
 
         const transactionTypeLayout = {
-          margin: { t: 20, r: 20, b: 20, l: 20 },
-          showlegend: false,
-          annotations: [
-            {
-              font: { size: 14 },
-              showarrow: false,
-              text: "Transaction Types",
-              x: 0.5,
-              y: 0.5,
+            margin: { t: 20, r: 20, b: 20, l: 20 },
+            showlegend: true,
+            legend: {
+                orientation: "v",
+                yanchor: "middle",
+                y: 0.5,
+                xanchor: "left",
+                x: 0.02,
+                bgcolor: "rgba(255, 255, 255, 0.8)",
+                bordercolor: "#e5e7eb",
+                borderwidth: 1,
             },
-          ],
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
+            annotations: [
+                {
+                    font: { size: 14, color: "#1f2937" },
+                    showarrow: false,
+                    text: "Credit Facility Types",
+                    x: 0.5,
+                    y: 0.5,
+                },
+            ],
+            plot_bgcolor: "#ffffff",
+            paper_bgcolor: "#ffffff",
+            hoverlabel: {
+                bgcolor: "#ffffff",
+                font: { size: 12 },
+                bordercolor: "#e5e7eb",
+            },
         };
 
-        // Pattern Analysis Plot (using cumulative anomalies)
-        let cumulativeAnomalies = data.time_series.anomaly_count.reduce(
-          (acc, val, i) => {
-            if (i === 0) return [val];
-            return [...acc, acc[i - 1] + val];
-          },
-          []
-        );
-
+        // Pattern Analysis Plot
         const patternData = [
-          {
-            x: data.time_series.timestamps,
-            y: data.time_series.anomaly_count.map(
-              (val, i) => (val / (val + data.time_series.normal_count[i])) * 100
-            ),
-            name: "Anomaly Rate",
-            type: "scatter",
-            mode: "lines",
-            line: {
-              shape: "spline",
-              width: 3,
-              color: "#8b5cf6",
+            {
+                x: data.time_series.timestamps,
+                y: data.time_series.anomaly_count.map(
+                    (val, i) => (val / (val + data.time_series.normal_count[i])) * 100
+                ),
+                name: "Anomaly Rate",
+                type: "scatter",
+                mode: "lines",
+                line: {
+                    shape: "spline",
+                    width: 3,
+                    color: "#8b5cf6",
+                },
+                hovertemplate: "<b>%{x|%Y-%m-%d}</b><br>" +
+                             "Rate: %{y:.2f}%<br>" +
+                             "<extra></extra>"
             },
-            yaxis: "y",
-          },
-          {
-            x: data.time_series.timestamps,
-            y: cumulativeAnomalies,
-            name: "Cumulative Anomalies",
-            type: "scatter",
-            mode: "lines",
-            line: {
-              shape: "spline",
-              width: 3,
-              color: "#f59e0b",
-            },
-            yaxis: "y2",
-          },
         ];
 
         const patternLayout = {
-          margin: { t: 20, r: 50, b: 40, l: 50 },
-          xaxis: {
-            title: "Time",
-            type: "date",
-            tickformat: "%H:%M",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-            linecolor: "#e5e7eb",
-          },
-          yaxis: {
-            title: "Anomaly Rate (%)",
-            showgrid: true,
-            gridcolor: "#e5e7eb",
-            linecolor: "#e5e7eb",
-            zeroline: false,
-            range: [0, 100],
-          },
-          yaxis2: {
-            title: "Cumulative Anomalies",
-            overlaying: "y",
-            side: "right",
-            showgrid: false,
-            zeroline: false,
-          },
-          showlegend: true,
-          legend: {
-            x: 0,
-            y: 1.1,
-            orientation: "h",
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-          hovermode: "x unified",
+            margin: { t: 20, r: 20, b: 40, l: 40 },
+            xaxis: {
+                title: "Date",
+                type: "date",
+                tickformat: "%Y-%m-%d",
+                showgrid: true,
+                gridcolor: "#e5e7eb",
+                linecolor: "#e5e7eb",
+                rangeslider: { visible: true },
+                rangeselector: {
+                    buttons: [
+                        { count: 1, label: '1m', step: 'month', stepmode: 'backward' },
+                        { count: 3, label: '3m', step: 'month', stepmode: 'backward' },
+                        { count: 6, label: '6m', step: 'month', stepmode: 'backward' },
+                        { step: 'all', label: 'All' }
+                    ]
+                }
+            },
+            yaxis: {
+                title: "Anomaly Rate (%)",
+                showgrid: true,
+                gridcolor: "#e5e7eb",
+                linecolor: "#e5e7eb",
+                zeroline: false,
+                range: [0, 100],
+            },
+            showlegend: true,
+            legend: {
+                x: 0,
+                y: 1.1,
+                orientation: "h",
+                bgcolor: "rgba(255, 255, 255, 0.8)",
+                bordercolor: "#e5e7eb",
+                borderwidth: 1,
+            },
+            plot_bgcolor: "#ffffff",
+            paper_bgcolor: "#ffffff",
+            hovermode: "x unified",
+            hoverlabel: {
+                bgcolor: "#ffffff",
+                font: { size: 14 },
+                bordercolor: "#e5e7eb",
+            },
         };
 
         const config = {
-          responsive: true,
-          displayModeBar: false,
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+            modeBarButtonsToAdd: [{
+                name: 'Download Plot',
+                icon: Plotly.Icons.download,
+                click: function(gd) {
+                    Plotly.downloadImage(gd, {format: 'png', width: 800, height: 600, filename: 'plot'});
+                }
+            }],
         };
 
         // Plot all charts
-        Plotly.newPlot(
-          "timeSeriesPlot",
-          timeSeriesData,
-          timeSeriesLayout,
-          config
-        );
+        Plotly.newPlot("timeSeriesPlot", timeSeriesData, timeSeriesLayout, config);
         Plotly.newPlot("patternPlot", patternData, patternLayout, config);
-        Plotly.newPlot(
-          "regionalPlot",
-          regionalPlotData,
-          regionalLayout,
-          config
-        );
-        Plotly.newPlot(
-          "transactionTypePlot",
-          transactionTypePlotData,
-          transactionTypeLayout,
-          config
-        );
+        Plotly.newPlot("regionalPlot", regionalPlotData, regionalLayout, config);
+        Plotly.newPlot("transactionTypePlot", transactionTypePlotData, transactionTypeLayout, config);
       }
 
-      function updateDataTable(transactions) {
+      function updateDataTable(data) {
         anomalyTable.clear();
-        anomalyTable.rows.add(transactions);
+        
+        data.forEach(anomaly => {
+          anomalyTable.row.add([
+            anomaly.internal_id || '-',
+            anomaly.origination_date || '-',
+            anomaly.credit_facility_type || '-',
+            anomaly.amount || '-',
+            anomaly.country || '-',
+            anomaly.risk_score || '-',
+            anomaly.anomaly_label === 1 ? 'Anomaly' : 'Normal',
+            `<button class="view-details-btn" onclick="showTransactionDetails(${JSON.stringify(anomaly).replace(/"/g, '&quot;')})">
+              View Details
+            </button>`
+          ]);
+        });
+        
         anomalyTable.draw();
       }
 
@@ -1120,124 +1393,168 @@
         modal.style.display = "none";
       }
 
-      function viewDetails(index) {
-        const data = anomalyTable.row(index).data();
-        const detailsHtml = `
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 class="text-lg font-semibold mb-4">Transaction Information</h3>
-              <div class="detail-row">
-                <div class="detail-label">Transaction ID</div>
-                <div class="detail-value">${data.id}</div>
+      function showTransactionDetails(transaction) {
+        const detailsDiv = document.getElementById('transactionDetails');
+        detailsDiv.innerHTML = '';
+        
+        // Group fields by category
+        const categories = {
+          'Basic Information': ['internal_id', 'origination_date', 'credit_facility_type', 'amount'],
+          'Location Details': ['country', 'region', 'city'],
+          'Transaction Details': ['transaction_id', 'transaction_type', 'transaction_date'],
+          'Risk Assessment': ['risk_score', 'anomaly_label', 'confidence_score'],
+          'Additional Information': Object.keys(transaction).filter(key => 
+            !['internal_id', 'origination_date', 'credit_facility_type', 'amount', 
+              'country', 'region', 'city', 'transaction_id', 'transaction_type', 
+              'transaction_date', 'risk_score', 'anomaly_label', 'confidence_score'].includes(key)
+          )
+        };
+
+        // Create HTML for each category
+        for (const [category, fields] of Object.entries(categories)) {
+          const categoryFields = fields.filter(field => transaction[field] !== undefined);
+          if (categoryFields.length > 0) {
+            detailsDiv.innerHTML += `
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">${category}</h3>
+                ${categoryFields.map(field => {
+                  const value = transaction[field];
+                  const formattedKey = field.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                  ).join(' ');
+                  
+                  let detailClass = 'transaction-detail';
+                  if (field === 'risk_score') {
+                    const score = parseFloat(value);
+                    detailClass += score > 0.7 ? ' danger' : score > 0.4 ? ' warning' : ' highlight';
+                  }
+
+                  let formattedValue = value;
+                  if (field === 'amount') {
+                    formattedValue = new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD'
+                    }).format(value);
+                  } else if (field.includes('date')) {
+                    formattedValue = new Date(value).toLocaleString();
+                  }
+
+                  return `
+                    <div class="${detailClass}">
+                      <label>${formattedKey}:</label>
+                      <span>${formattedValue || '-'}</span>
+                    </div>
+                  `;
+                }).join('')}
               </div>
-              <div class="detail-row">
-                <div class="detail-label">Timestamp</div>
-                <div class="detail-value">${data.timestamp}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Type</div>
-                <div class="detail-value">${data.type}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Amount</div>
-                <div class="detail-value">${data.amount}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Region</div>
-                <div class="detail-value">${data.region}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Risk Score</div>
-                <div class="detail-value">
-                  <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${
-                      data.risk_score * 100
-                    }%"></div>
-                  </div>
-                  ${data.risk_score}
-                </div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Status</div>
-                <div class="detail-value">
-                  <span class="badge ${
-                    data.status === "Anomaly" ? "badge-danger" : "badge-success"
-                  }">${data.status}</span>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold mb-4">Additional Details</h3>
-              <div class="detail-row">
-                <div class="detail-label">IP Address</div>
-                <div class="detail-value">${data.ip_address}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Device ID</div>
-                <div class="detail-value">${data.device_id}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Merchant</div>
-                <div class="detail-value">${data.merchant}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Transaction Method</div>
-                <div class="detail-value">${data.transaction_method}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Customer ID</div>
-                <div class="detail-value">${data.customer_id}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Customer Since</div>
-                <div class="detail-value">${data.customer_since}</div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-label">Previous Transactions</div>
-                <div class="detail-value">${data.previous_transactions}</div>
-              </div>
-              ${
-                data.anomaly_factors.length > 0
-                  ? `
-                <div class="detail-row">
-                  <div class="detail-label">Anomaly Factors</div>
-                  <div class="detail-value">
-                    <ul class="list-disc pl-4">
-                      ${data.anomaly_factors
-                        .map(
-                          (factor) => `<li class="text-red-600">${factor}</li>`
-                        )
-                        .join("")}
-                    </ul>
-                  </div>
-                </div>
-              `
-                  : ""
-              }
-            </div>
+            `;
+          }
+        }
+
+        // Add action buttons
+        detailsDiv.innerHTML += `
+          <div class="modal-footer">
+            <button class="modal-button secondary" onclick="closeModal()">Close</button>
+            <button class="modal-button primary" onclick="exportTransactionDetails(${JSON.stringify(transaction)})">
+              <i class="fas fa-download mr-2"></i>Export Details
+            </button>
           </div>
         `;
 
-        document.getElementById("transactionDetails").innerHTML = detailsHtml;
-        modal.style.display = "block";
+        modal.style.display = 'block';
       }
 
-      function exportTransactionDetails() {
-        const data = anomalyTable
-          .row(
-            document
-              .querySelector("#transactionDetails")
-              .getAttribute("data-index")
-          )
-          .data();
-        const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-          JSON.stringify(data, null, 2)
-        )}`;
-        const link = document.createElement("a");
-        link.href = jsonString;
-        link.download = `transaction_${data.id}_details.json`;
-        link.click();
+      function exportTransactionDetails(transaction) {
+        const data = Object.entries(transaction)
+          .map(([key, value]) => {
+            const formattedKey = key.split('_').map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            return `${formattedKey}: ${value}`;
+          })
+          .join('\n');
+
+        const blob = new Blob([data], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `transaction_${transaction.internal_id || 'details'}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       }
+
+      // Initialize DataTable with enhanced features
+      let anomalyTable = $("#anomalyTable").DataTable({
+        dom: '<"flex flex-col md:flex-row justify-between items-center mb-4"<"flex items-center mb-2 md:mb-0"l><"flex items-center"f>>rt<"flex flex-col md:flex-row justify-between items-center mt-4"<"flex items-center mb-2 md:mb-0"i><"flex items-center"p>>',
+        language: {
+          search: "",
+          searchPlaceholder: "Search transactions...",
+          lengthMenu: "Show _MENU_ entries",
+          info: "Showing _START_ to _END_ of _TOTAL_ entries",
+          infoEmpty: "Showing 0 to 0 of 0 entries",
+          infoFiltered: "(filtered from _MAX_ total entries)",
+          paginate: {
+            first: '<i class="fas fa-angle-double-left"></i>',
+            previous: '<i class="fas fa-angle-left"></i>',
+            next: '<i class="fas fa-angle-right"></i>',
+            last: '<i class="fas fa-angle-double-right"></i>'
+          }
+        },
+        pageLength: 10,
+        responsive: true,
+        order: [[5, "desc"]],
+        stateSave: true,
+        searching: true,
+        processing: true,
+        serverSide: false,
+        columnDefs: [
+          {
+            targets: -1,
+            orderable: false,
+            className: "text-center"
+          },
+          {
+            targets: 6,
+            render: function (data, type, row) {
+              let badgeClass = data === "Anomaly" ? "badge-danger" : "badge-success";
+              return `<span class="badge ${badgeClass}">${data}</span>`;
+            },
+            className: "text-center"
+          },
+          {
+            targets: 5,
+            render: function (data, type, row) {
+              let score = parseFloat(data);
+              let color = score > 0.7 ? "text-red-600" : score > 0.4 ? "text-yellow-600" : "text-green-600";
+              return `<span class="${color} font-semibold">${data}</span>`;
+            },
+            className: "text-center"
+          },
+          {
+            targets: 3,
+            render: function (data, type, row) {
+              return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+              }).format(data);
+            }
+          }
+        ],
+        createdRow: function (row, data, dataIndex) {
+          if (data.status === "Anomaly") {
+            $(row).addClass("anomaly-row");
+          }
+        }
+      });
+
+      // Add custom styling for DataTable elements
+      $('.dataTables_filter input').addClass('form-input w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent');
+      $('.dataTables_length select').addClass('form-select w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent');
+      $('.dataTables_paginate .paginate_button').addClass('px-3 py-1 mx-1 rounded-lg border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent');
+      $('.dataTables_paginate .paginate_button.current').addClass('bg-blue-500 text-white border-blue-500 hover:bg-blue-600');
+      $('.dataTables_info').addClass('text-sm text-gray-600');
     </script>
   </body>
 </html>

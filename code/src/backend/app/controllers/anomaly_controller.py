@@ -72,36 +72,42 @@ def anomaly_detection_page():
 @api.route('/get-anomalies')
 class TransactionAssess(Resource):
     @api.expect(upload_parser)
-    @api.response(201, 'Anomalies detected successfully', anomaly_model)
-    @api.response(400, 'Invalid input', error_model)
-    @api.response(413, 'File too large', error_model)
-    @api.response(500, 'Server error', error_model)
+    @api.response(200, 'Success', anomaly_model)
+    @api.response(400, 'Bad Request', error_model)
+    @api.response(500, 'Internal Server Error', error_model)
     @api.doc(
         description='Upload a new transaction CSV',
         responses={
-            201: 'Anomalies successfully detected',
+            200: 'Anomalies successfully detected',
             400: 'Invalid file format or missing required fields',
-            413: 'File size exceeds maximum limit of 10MB',
             500: 'Internal server error during processing'
         }
     )
     def post(self):
-        
-        args = upload_parser.parse_args()
-        file = args['transactions']
-        
-        if not file:
-            api.abort(400, "No file provided")
-        
+        """Upload a CSV file and get anomaly detection results"""
         try:
-            # Create rulebook
-            anomalies=anomaly_service.predict_anomalies(file)
-            anomalies = anomalies.fillna('')
-            anomalies = anomalies.astype(str)
-
-            records = anomalies.to_dict(orient='records')
-
-        # Wrap in a dict so the JSON starts with '{'
-            return {"anomalies": records}, 200
+            if 'transactions' not in request.files:
+                api.abort(400, "No file uploaded")
+            
+            file = request.files['transactions']
+            if file.filename == '':
+                api.abort(400, "No file selected")
+            
+            if not file.filename.endswith('.csv'):
+                api.abort(400, "File must be a CSV")
+            
+            # Save the file temporarily
+            temp_path = f"/tmp/{file.filename}"
+            file.save(temp_path)
+            
+            # Process the file
+            result = anomaly_service.predict_anomalies(temp_path)
+            
+            # Clean up the temporary file
+            os.remove(temp_path)
+            
+            # Return JSON response
+            return result, 200
+            
         except Exception as e:
             api.abort(500, f"Error detecting anomalies: {str(e)}")
