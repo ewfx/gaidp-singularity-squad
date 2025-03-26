@@ -1,6 +1,6 @@
-# 🚀 Project Name
+# RuleSense: Gen AI-powered Data Profiling for Regulatory Reporting
 
-## 📌 Table of Contents
+## Table of Contents
 - [Introduction](#introduction)
 - [Demo](#demo)
 - [Inspiration](#inspiration)
@@ -10,51 +10,102 @@
 - [How to Run](#how-to-run)
 - [Tech Stack](#tech-stack)
 - [Team](#team)
+- [Sample Dataset](#sample-dataset)
+- [Regulatory Rules](#regulatory-rules)
+- [Submission Deliverables](#submission-deliverables)
 
 ---
 
-## 🎯 Introduction
-A brief overview of our project and its purpose. Mention which problem statement are your attempting to solve. Keep it concise and engaging.
+## Introduction
 
-## 🎥 Demo
-🔗 [Live Demo](#) (if applicable)  
-📹 [Video Demo](#) (if applicable)  
-🖼️ Screenshots:
+RuleSense is a Gen AI-powered compliance assistant designed to automate regulatory data profiling in the financial sector. It uses Gemini’s document processing capabilities and unsupervised machine learning models to extract rules from complex regulatory documents, validate transactional data, identify anomalies, assess risks, and recommend remediation actions.
 
-![Screenshot 1](link-to-image)
+---
 
-## 💡 Inspiration
-What inspired you to create this project? Describe the problem you're solving.
+## Demo
 
-## ⚙️ What It Does
-Explain the key features and functionalities of your project.
+- Live Demo: [Link to Demo](#)
+- Video Walkthrough: [Link to Video](#)
 
-## 🛠️ How We Built It
-Briefly outline the technologies, frameworks, and tools used in development.
+Screenshots:
 
-## 🚧 Challenges We Faced
-Describe the major technical or non-technical challenges your team encountered.
+- Rulebook Generator UI  
+  ![Rulebook Generator UI](assets/rulebook-ui.png)
 
-## 🏃 How to Run
-1. Clone the repository  
-   ```sh
-   git clone https://github.com/your-repo.git
-   ```
-2. Install dependencies  
-   ```sh
-   npm install  # or pip install -r requirements.txt (for Python)
-   ```
-3. Run the project  
-   ```sh
-   npm start  # or python app.py
-   ```
+- CSV Validator Results  
+  ![CSV Validator](assets/validation-results.png)
 
-## 🏗️ Tech Stack
-- 🔹 Frontend: React / Vue / Angular
-- 🔹 Backend: Node.js / FastAPI / Django
-- 🔹 Database: PostgreSQL / Firebase
-- 🔹 Other: OpenAI API / Twilio / Stripe
+- Anomaly Detection View  
+  ![Anomaly Detection](assets/anomaly-detection.png)
 
-## 👥 Team
-- **Your Name** - [GitHub](#) | [LinkedIn](#)
-- **Teammate 2** - [GitHub](#) | [LinkedIn](#)
+---
+
+## Inspiration
+
+Financial institutions face a major challenge when translating regulatory reporting instructions into enforceable data rules. This manual and error-prone process often slows down compliance cycles. RuleSense was built to streamline this process by automatically interpreting regulations and applying intelligent validations.
+
+---
+
+## What It Does
+
+- Extracts data validation rules from regulatory PDFs using Gemini AI
+- Parses extracted rules into structured JSON format with regex
+- Validates uploaded transactional CSVs against these rules
+- Flags validation issues and suggests remediation actions
+- Detects anomalies in data using unsupervised learning
+- Implements a dynamic risk scoring system
+- Enables audit-friendly, explainable insights for compliance teams
+
+---
+
+## How We Built It
+
+**Regulatory Rulebook Extraction**
+
+- PDF parsing using Gemini AI’s document processing API
+- Semantic chunking and cosine similarity for relevant rule matching
+- Regex-based pattern extraction and rulebook generation (JSON format)
+
+**Validation Engine**
+
+- CSV upload interface for transactional datasets
+- Field-by-field regex validation using the generated rulebook
+- Detailed output: matched rule ID, violation description, suggestion
+
+**Anomaly Detection**
+
+- Uses Isolation Forest, DBSCAN, and LOF from scikit-learn
+- Scales numeric features with StandardScaler
+- Visualizes anomaly distribution using matplotlib
+
+**Frontend**
+
+- Built using Streamlit (or React, if configured) to allow document and CSV uploads, validation display, and anomaly review
+
+---
+
+## Challenges We Faced
+
+- Parsing varied PDF structures and noisy formatting
+- Extracting accurate regex patterns from natural language rules
+- Balancing anomaly detection thresholds to avoid false positives
+- Ensuring explanations are understandable by non-technical auditors
+- Maintaining performance and scalability for large CSVs
+
+---
+
+## How to Run
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/rulesense.git
+cd rulesense
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the Flask backend
+python app.py
+
+# (Optional) Start the Streamlit frontend
+streamlit run frontend.py
