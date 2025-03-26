@@ -291,7 +291,14 @@ http://localhost:5001
 - dotenv (.env configuration)
 
 
-# RuleSense Dataset Schemas
+## Team
+
+- **Your Name** – [GitHub](https://github.com/your-username) | [LinkedIn](https://linkedin.com/in/your-name)
+- **Teammate 1** – [GitHub](https://github.com/teammate1) | [LinkedIn](https://linkedin.com/in/teammate1)
+- **Teammate 2** – [GitHub](https://github.com/teammate2) | [LinkedIn](https://linkedin.com/in/teammate2)
+
+
+# Sample Dataset
 
 This document describes the structure of each dataset used in the RuleSense project.
 
@@ -429,10 +436,4 @@ This dataset contains enriched features for training and evaluating unsupervised
 | obligor_lei | object | Obligor lei |
 | primary_source_of_repayment_lei | object | Primary source of repayment lei |
 
-
-## Team
-
-- **Your Name** – [GitHub](https://github.com/your-username) | [LinkedIn](https://linkedin.com/in/your-name)
-- **Teammate 1** – [GitHub](https://github.com/teammate1) | [LinkedIn](https://linkedin.com/in/teammate1)
-- **Teammate 2** – [GitHub](https://github.com/teammate2) | [LinkedIn](https://linkedin.com/in/teammate2)
 
